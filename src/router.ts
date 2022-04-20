@@ -1,4 +1,3 @@
-import header from "./components/header";
 import routes from "./routes";
 
 export interface Route {
@@ -11,6 +10,7 @@ export type Routes = { [key: string]: Route };
 
 class Router {
   private title: string;
+
   private routes: Routes;
 
   constructor() {
@@ -20,11 +20,13 @@ class Router {
   }
 
   private onChangeHandlers: Array<() => void> = [];
+
   addOnChangeHandler(handler: () => void) {
     this.onChangeHandlers.push(handler);
   }
 
   private initialized = false;
+
   init() {
     if (this.initialized) return;
     this.initialized = true;
@@ -32,8 +34,9 @@ class Router {
   }
 
   private currentRoute: Route;
+
   getCurrentRoute() {
-    const path = "/" + window.location.pathname.split("/")[1].toLowerCase();
+    const path = `/${window.location.pathname.split("/")[1].toLowerCase()}`;
     return this.routes[path];
   }
 
@@ -43,13 +46,13 @@ class Router {
 
   setTitle(text?: string) {
     if (text?.length) {
-      const next = text + " - " + this.title;
+      const next = `${text} - ${this.title}`;
       if (document.title !== next) document.title = next;
       return;
     }
 
     if (this.currentRoute) {
-      const next = this.currentRoute.name + " - " + this.title;
+      const next = `${this.currentRoute.name} - ${this.title}`;
       if (document.title !== next) document.title = next;
     } else document.title = this.title;
   }
@@ -69,10 +72,6 @@ class Router {
     this.setTitle();
 
     this.onChangeHandlers.forEach(handler => handler());
-
-    if ([routes.library, routes.history, routes.updates, routes.browse].includes(this.currentRoute)) {
-      [header].forEach(c => c.render());
-    }
     this.render();
   }
 
