@@ -8,9 +8,7 @@ export type Routes = { [key: string]: Route };
 
 class Router {
   private title: string;
-
   private routes: Routes;
-
   private mutex = { current: false };
 
   constructor(routes: Routes) {
@@ -20,13 +18,11 @@ class Router {
   }
 
   private onChangeHandlers: Array<() => void> = [];
-
   addOnChangeHandler(handler: () => void) {
     this.onChangeHandlers.push(handler);
   }
 
   private initialized = false;
-
   init() {
     if (this.initialized) return;
     this.initialized = true;
@@ -34,7 +30,6 @@ class Router {
   }
 
   private currentRoute: Route;
-
   getCurrentRoute() {
     const path = `/${window.location.pathname.split("/")[1].toLowerCase()}`;
     return this.routes[path];
@@ -79,15 +74,17 @@ class Router {
         }, 10);
       });
     }
+
     this.mutex.current = true;
+    try {
+      this.currentRoute = this.getCurrentRoute();
+      this.setTitle();
 
-    this.currentRoute = this.getCurrentRoute();
-    this.setTitle();
-
-    this.onChangeHandlers.forEach(handler => handler());
-    this.render();
-
-    this.mutex.current = false;
+      this.onChangeHandlers.forEach(handler => handler());
+      this.render();
+    } finally {
+      this.mutex.current = false;
+    }
   }
 
   private render() {
