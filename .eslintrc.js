@@ -27,6 +27,7 @@ module.exports = {
       },
       plugins: ["@typescript-eslint", "prettier"],
       rules: {
+        "@typescript-eslint/lines-between-class-members": "off",
         "react/jsx-filename-extension": "off",
         "class-methods-use-this": "off",
         "no-continue": "off",
