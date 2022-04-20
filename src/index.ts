@@ -1,13 +1,17 @@
-import header from "./components/header";
-import router from "./router";
-import routes from "./routes";
+import App from "./App";
+import Header from "./Components/Header";
+import Router from "./Router";
+import Routes from "./Routes";
 import "./styles/index.less";
 
 const main = () => {
+  const router = new Router(Routes);
+  App.setRouter(router);
+
   router.addOnChangeHandler(() => {
     const route = router.getCurrentRoute();
-    if ([routes.library, routes.history, routes.updates, routes.browse].includes(route)) {
-      [header].forEach(c => c.render());
+    if ([Routes.library, Routes.history, Routes.updates, Routes.browse].includes(route)) {
+      [Header].forEach(c => c.render());
     }
   });
   router.init();

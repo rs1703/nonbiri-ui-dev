@@ -1,5 +1,3 @@
-import routes from "./routes";
-
 export interface Route {
   name: string;
   path: string;
@@ -13,7 +11,9 @@ class Router {
 
   private routes: Routes;
 
-  constructor() {
+  private mutex = { current: false };
+
+  constructor(routes: Routes) {
     this.title = document.title;
     this.routes = Object.fromEntries(Object.values(routes).map(r => [r.path, r]));
     window.addEventListener("popstate", this.onChange.bind(this));
@@ -67,19 +67,32 @@ class Router {
     window.dispatchEvent(new Event("popstate"));
   }
 
-  private onChange() {
+  private async onChange() {
+    if (this.mutex.current) {
+      await new Promise<void>(resolve => {
+        const interval = setInterval(() => {
+          requestAnimationFrame(() => {
+            if (this.mutex.current) return;
+            clearInterval(interval);
+            resolve();
+          });
+        }, 10);
+      });
+    }
+    this.mutex.current = true;
+
     this.currentRoute = this.getCurrentRoute();
     this.setTitle();
 
     this.onChangeHandlers.forEach(handler => handler());
     this.render();
+
+    this.mutex.current = false;
   }
 
   private render() {
-    if (this.currentRoute?.component?.render) {
-      this.currentRoute.component.render();
-    }
+    this.currentRoute?.component?.render();
   }
 }
 
-export default new Router();
+export default Router;

@@ -8,6 +8,6 @@
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "@types"],
   "exclude": ["node_modules"]
 }

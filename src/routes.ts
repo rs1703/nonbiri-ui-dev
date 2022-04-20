@@ -1,29 +1,29 @@
-import browse from "./components/browse";
-import history from "./components/history";
-import library from "./components/library";
-import updates from "./components/updates";
+import Browse from "./Components/Browse";
+import History from "./Components/History";
+import Library from "./Components/Library";
+import Updates from "./Components/Updates";
 
-const routes = {
+const Routes = {
   library: {
     name: "Library",
     path: "/",
-    component: library
+    component: Library
   },
   history: {
     name: "History",
     path: "/history",
-    component: history
+    component: History
   },
   updates: {
     name: "Updates",
     path: "/updates",
-    component: updates
+    component: Updates
   },
   browse: {
     name: "Browse",
     path: "/browse",
-    component: browse
+    component: Browse
   }
 };
 
-export default routes;
+export default Routes;

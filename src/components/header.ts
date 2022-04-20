@@ -1,5 +1,6 @@
-import router from "../router";
-import routes from "../routes";
+import { Router } from "../App";
+import DOM from "../DOM";
+import Routes from "../Routes";
 
 let cachedNavigation: HTMLElement;
 const createNavigation = () => {
@@ -8,9 +9,9 @@ const createNavigation = () => {
   const nav = document.createElement("nav");
   const ul = document.createElement("ul");
 
-  Object.values(routes).forEach(route => {
+  Object.values(Routes).forEach(route => {
     const li = document.createElement("li");
-    if (router.getCurrentPath() === route.path) {
+    if (Router.getCurrentPath() === route.path) {
       li.classList.add("active");
     }
 
@@ -21,15 +22,14 @@ const createNavigation = () => {
     a.addEventListener("click", ev => {
       ev.preventDefault();
 
-      const currentPath = router.getCurrentPath();
-      if (currentPath === a.href) return;
-
-      if (!currentPath.startsWith(a.href)) {
+      if (window.location.href === a.href) return;
+      if (!window.location.href.startsWith(a.href)) {
         const prevActive = ul.querySelector(".active");
         if (prevActive && prevActive !== li) prevActive.classList.remove("active");
         if (!li.classList.contains("active")) li.classList.add("active");
       }
-      router.navigate(a.href);
+
+      Router.navigate(a.href);
     });
 
     li.appendChild(a);
@@ -41,25 +41,17 @@ const createNavigation = () => {
   return nav;
 };
 
-let cachedSearch: HTMLInputElement;
-const createSearch = () => {
-  if (cachedSearch) return cachedSearch;
-
-  const input = document.createElement("input");
-  input.setAttribute("type", "text");
-
-  cachedSearch = input;
-  return input;
-};
-
 const render = () => {
-  const root = document.getElementById("app");
-  if (!root || document.getElementById("header")) return;
+  const root = DOM.getRoot();
+  if (!root || document.getElementById("header")) {
+    return;
+  }
 
   const header = document.createElement("header");
+  header.setAttribute("data-common", "1");
   header.id = "header";
 
-  header.append(createNavigation(), createSearch());
+  header.append(createNavigation());
   root.appendChild(header);
 };
 
