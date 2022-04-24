@@ -91,7 +91,7 @@ const Browse = async () => {
   };
   await fetch();
 
-  searchParamsChangeEventListener = () => {
+  searchParamsChangeEventListener = async () => {
     if (window.location.search !== url.search) {
       while (container.firstChild) {
         container.removeChild(container.lastChild);
@@ -99,7 +99,10 @@ const Browse = async () => {
 
       url.search = window.location.search;
       url.searchParams.set("id", Context.currentExtension.id);
-      fetch();
+
+      loader.render();
+      await fetch();
+      loader.destroy();
     }
   };
 
