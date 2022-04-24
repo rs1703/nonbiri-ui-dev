@@ -27,11 +27,12 @@ const Browse = async () => {
   const container = document.createElement("div");
   container.classList.add("entries");
 
+  const ignore = ["q", "id"];
   const fetch = async (page = 1) => {
     currentPage = page;
 
     url.searchParams.set("page", page.toString());
-    if (url.searchParams.has("q")) {
+    if (Array.from(url.searchParams.keys()).some(key => !ignore.includes(key))) {
       url.pathname = "/api/search";
     } else url.pathname = "/api/manga";
 
