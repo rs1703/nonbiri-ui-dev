@@ -1,2 +1,38 @@
 @import "fonts/noto-sans-display.less";
 @import "fonts/roboto.less";
+
+.spinner {
+  animation: 2s linear 0s infinite normal none running ls;
+
+  circle {
+    stroke: inherit;
+    fill: transparent;
+    stroke-width: inherit;
+    stroke-dashoffset: 96;
+    stroke-dasharray: 48;
+    stroke-miterlimit: 10;
+    animation: lp 1.6s cubic-bezier(0.4, 0.15, 0.6, 0.85) infinite;
+  }
+
+  @keyframes ls {
+    0% {
+      transform: rotate(0);
+      -webkit-transform: rotate(0);
+    }
+
+    100% {
+      transform: rotate(360deg);
+      -webkit-transform: rotate(360deg);
+    }
+  }
+
+  @keyframes lp {
+    0% {
+      stroke-dashoffset: 96;
+    }
+
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+}

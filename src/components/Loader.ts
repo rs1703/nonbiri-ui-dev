@@ -15,23 +15,21 @@ const render = (parent?: HTMLElement) => {
   const loader = document.createElement("div");
   loader.classList.add("loader");
 
-  const spinner = document.createElement("div");
+  const spinner = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   spinner.classList.add("spinner");
+  spinner.setAttribute("viewBox", "0 0 24 24");
+  spinner.setAttribute("width", "24");
+  spinner.setAttribute("height", "24");
+  spinner.setAttribute("fill", "none");
+  spinner.setAttribute("stroke", "currentColor");
+  spinner.setAttribute("stroke-width", "2");
 
-  const spinnerBars = document.createElement("div");
-  spinnerBars.classList.add("spinner-bars");
+  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  circle.setAttribute("cx", "12");
+  circle.setAttribute("cy", "12");
+  circle.setAttribute("r", "10");
 
-  const spinnerBar1 = document.createElement("div");
-  spinnerBar1.classList.add("spinner-bar");
-
-  const spinnerBar2 = document.createElement("div");
-  spinnerBar2.classList.add("spinner-bar");
-
-  const spinnerBar3 = document.createElement("div");
-  spinnerBar3.classList.add("spinner-bar");
-
-  spinnerBars.append(spinnerBar1, spinnerBar2, spinnerBar3);
-  spinner.append(spinnerBars);
+  spinner.appendChild(circle);
   loader.append(spinner);
 
   cachedLoader = loader;
