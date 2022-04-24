@@ -76,7 +76,7 @@ const Browse = async () => {
     });
 
     if (data.hasNext) {
-      const lastIdx = Math.max(0, data.entries.length - 3);
+      const lastIdx = Math.max(0, Math.floor(data.entries.length / 2) - 1) || data.entries.length - 1;
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();

@@ -1,6 +1,7 @@
 import { Router, sendRequest } from "../../App";
 import Filter from "../Filter";
 import { Search } from "../Icons";
+import ViewMode from "../ViewMode";
 import Context from "./Context";
 
 const SearchForm = () => {
@@ -116,8 +117,7 @@ const Actions = async () => {
   const actions = document.createElement("div");
   actions.classList.add("actions");
 
-  actions.appendChild(SearchForm());
-  actions.appendChild(Filters());
+  actions.append(ViewMode("browse"), SearchForm(), Filters());
 
   return actions;
 };
