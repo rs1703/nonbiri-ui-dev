@@ -12,7 +12,6 @@ const SearchForm = () => {
   input.type = "text";
   input.placeholder = "Search";
   input.autocomplete = "off";
-  input.required = true;
 
   const searchParams = new URLSearchParams(window.location.search);
   input.defaultValue = searchParams.get("q") || "";
@@ -26,7 +25,8 @@ const SearchForm = () => {
     ev.preventDefault();
 
     const url = new URL(window.location.href);
-    url.searchParams.set("q", input.value);
+    if (input.value) url.searchParams.set("q", input.value);
+    else url.searchParams.delete("q");
 
     Router.navigate(url.pathname + url.search, {
       preventDefault: true
