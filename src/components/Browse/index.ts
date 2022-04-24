@@ -1,8 +1,8 @@
 import { Router, sendRequest } from "../../App";
 import DOM from "../../DOM";
 import loader from "../Loader";
+import Actions from "./Actions";
 import Context, { id } from "./Context";
-import Header from "./Header";
 import { Extensions, Sources } from "./list";
 
 interface BrowseData {
@@ -132,11 +132,11 @@ const render = async () => {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
     if (Context.currentExtension) {
       loader.render();
-      const header = await Header();
+      const actions = await Actions();
       const main = await Browse();
       loader.destroy();
 
-      container.append(header, main);
+      container.append(actions, main);
     } else Router.navigate("/browse");
   } else {
     const header = document.createElement("header");

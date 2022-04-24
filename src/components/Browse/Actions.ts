@@ -108,18 +108,18 @@ const Filters = () => {
   return container;
 };
 
-const Header = async () => {
+const Actions = async () => {
   await sendRequest<Filter[]>(`/api/extensions/filters?id=${Context.currentExtension.id}`).then(
     filters => (Context.filters = new Set(filters))
   );
 
-  const header = document.createElement("header");
-  header.classList.add("header");
+  const actions = document.createElement("div");
+  actions.classList.add("actions");
 
-  header.appendChild(SearchForm());
-  header.appendChild(Filters());
+  actions.appendChild(SearchForm());
+  actions.appendChild(Filters());
 
-  return header;
+  return actions;
 };
 
-export default Header;
+export default Actions;
