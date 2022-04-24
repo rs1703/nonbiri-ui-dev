@@ -1,6 +1,7 @@
 import { Router, sendRequest } from "../../App";
+import DOM from "../../DOM";
 import Filter from "../Filter";
-import { Search } from "../Icons";
+import { FilterIcon, SearchIcon } from "../Icons";
 import ViewMode from "../ViewMode";
 import Context from "./Context";
 
@@ -20,7 +21,7 @@ const SearchForm = () => {
   const submit = document.createElement("button");
   submit.classList.add("search-btn");
   submit.type = "submit";
-  submit.appendChild(Search());
+  submit.appendChild(SearchIcon());
 
   form.addEventListener("submit", ev => {
     ev.preventDefault();
@@ -117,7 +118,29 @@ const Actions = async () => {
   const actions = document.createElement("div");
   actions.classList.add("actions");
 
-  actions.append(ViewMode("browse"), SearchForm(), Filters());
+  const showBtn = document.createElement("button");
+  showBtn.classList.add("show-actions");
+  showBtn.type = "button";
+  showBtn.appendChild(FilterIcon());
+
+  showBtn.addEventListener("click", ev => {
+    ev.preventDefault();
+    actions.classList.remove("hidden");
+    showBtn.remove();
+  });
+
+  const hideBtn = document.createElement("button");
+  hideBtn.classList.add("hide");
+  hideBtn.type = "button";
+  hideBtn.textContent = "Hide";
+
+  hideBtn.addEventListener("click", ev => {
+    ev.preventDefault();
+    actions.classList.add("hidden");
+    DOM.getContainer().appendChild(showBtn);
+  });
+
+  actions.append(hideBtn, ViewMode("browse"), SearchForm(), Filters());
 
   return actions;
 };

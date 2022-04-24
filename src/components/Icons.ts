@@ -1,5 +1,5 @@
 let cachedCog: SVGSVGElement;
-export const Cog = () => {
+export const CogIcon = () => {
   if (cachedCog) {
     return cachedCog;
   }
@@ -31,7 +31,7 @@ export const Cog = () => {
 };
 
 let cachedSearch: SVGSVGElement;
-export const Search = () => {
+export const SearchIcon = () => {
   if (cachedSearch) {
     return cachedSearch;
   }
@@ -59,6 +59,30 @@ export const Search = () => {
 
   svg.append(circle, line);
   cachedSearch = svg;
+  return svg;
+};
+
+let cachedFilter: SVGSVGElement;
+export const FilterIcon = () => {
+  if (cachedFilter) {
+    return cachedFilter;
+  }
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "24");
+  svg.setAttribute("height", "24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+
+  const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  polygon.setAttribute("points", "22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3");
+
+  svg.append(polygon);
+  cachedFilter = svg;
   return svg;
 };
 
