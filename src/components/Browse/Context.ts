@@ -3,8 +3,9 @@ import { generateUniqueString } from "../../App";
 export const id = generateUniqueString();
 
 const Context = {
-  currentExtension: null as Extension,
+  currentExtension: undefined as Extension,
   extensions: new Map<string, Extension>(),
-  installedExtensions: new Map<string, Extension>()
+  installedExtensions: new Map<string, Extension>(),
+  filters: undefined as Set<Filter>
 };
 export default Context;

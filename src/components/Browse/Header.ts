@@ -1,5 +1,4 @@
 import { Router, sendRequest } from "../../App";
-import DOM from "../../DOM";
 import Filter from "../Filter";
 import { Search } from "../Icons";
 import Context from "./Context";
@@ -38,15 +37,15 @@ const SearchForm = () => {
   return form;
 };
 
-const Filters = (filters: Filter[]) => {
-  if (!filters?.length) {
+const Filters = () => {
+  if (!Context.filters?.size) {
     return undefined;
   }
 
   const container = document.createElement("div");
   container.classList.add("filters");
 
-  filters.forEach(filter => {
+  Context.filters.forEach(filter => {
     container.appendChild(Filter(filter));
   });
 
@@ -110,16 +109,17 @@ const Filters = (filters: Filter[]) => {
 };
 
 const Header = async () => {
-  const { currentExtension: currExt } = Context;
-  const filters = await sendRequest<Filter[]>(`/api/extensions/filters?id=${currExt.id}`);
+  await sendRequest<Filter[]>(`/api/extensions/filters?id=${Context.currentExtension.id}`).then(
+    filters => (Context.filters = new Set(filters))
+  );
 
   const header = document.createElement("header");
   header.classList.add("header");
 
   header.appendChild(SearchForm());
-  header.appendChild(Filters(filters));
+  header.appendChild(Filters());
 
-  DOM.getContainer().appendChild(header);
+  return header;
 };
 
 export default Header;

@@ -17,19 +17,15 @@ let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
 
 const Browse = async () => {
-  await Header();
-
-  const { currentExtension: currExt } = Context;
-  Router.setTitle(currExt.name);
+  Router.setTitle(Context.currentExtension.name);
   let currentPage = 0;
 
   const url = new URL(window.location.origin);
   url.search = window.location.search;
-  url.searchParams.set("id", currExt.id);
+  url.searchParams.set("id", Context.currentExtension.id);
 
   const container = document.createElement("div");
   container.classList.add("entries");
-  DOM.getContainer().appendChild(container);
 
   const fetch = async (page = 1) => {
     currentPage = page;
@@ -50,7 +46,7 @@ const Browse = async () => {
       const item = document.createElement("div");
       item.classList.add("entry");
 
-      const anchor = DOM.createAnchor(`/view/${currExt.id}${entry.path}`);
+      const anchor = DOM.createAnchor(`/view/${Context.currentExtension.id}${entry.path}`);
 
       const top = document.createElement("div");
       top.classList.add("figure");
@@ -92,33 +88,36 @@ const Browse = async () => {
     container.appendChild(fragment);
     window.dispatchEvent(new Event("pagination"));
   };
-  fetch();
+  await fetch();
 
   searchParamsChangeEventListener = () => {
     if (window.location.search !== url.search) {
-      container.replaceChildren("");
-      url.search = window.location.search;
-      url.searchParams.set("id", currExt.id);
+      while (container.firstChild) {
+        container.removeChild(container.lastChild);
+      }
 
+      url.search = window.location.search;
+      url.searchParams.set("id", Context.currentExtension.id);
       fetch();
     }
   };
 
   pageChangeEventListener = () => {
-    Router.setTitle(`${currExt.name} - Browse: Page ${currentPage}`);
+    Router.setTitle(`${Context.currentExtension.name} - Browse: Page ${currentPage}`);
   };
 
   window.addEventListener("popstate", searchParamsChangeEventListener);
   window.addEventListener("pagination", pageChangeEventListener);
+
+  return container;
 };
 
 const render = async () => {
-  Context.currentExtension = null;
   DOM.clear();
 
   const container = DOM.createContainer("browse");
   if (!Context.extensions.size) {
-    loader.render(container);
+    loader.render();
     (await sendRequest<Extension[]>("/api/extensions/index"))?.forEach(ext => Context.extensions.set(ext.id, ext));
     (await sendRequest<Extension[]>("/api/extensions"))?.forEach(ext => Context.installedExtensions.set(ext.id, ext));
     loader.destroy();
@@ -127,8 +126,14 @@ const render = async () => {
   const currExtId = Router.getCurrentExtensionId();
   if (currExtId) {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
-    if (Context.currentExtension) Browse();
-    else Router.navigate("/browse");
+    if (Context.currentExtension) {
+      loader.render();
+      const header = await Header();
+      const main = await Browse();
+      loader.destroy();
+
+      container.append(header, main);
+    } else Router.navigate("/browse");
   } else {
     const header = document.createElement("header");
     header.classList.add(id);
@@ -154,6 +159,9 @@ const render = async () => {
 };
 
 const destroy = () => {
+  Context.currentExtension = undefined;
+  Context.filters = undefined;
+
   if (searchParamsChangeEventListener) {
     window.removeEventListener("popstate", searchParamsChangeEventListener);
   }

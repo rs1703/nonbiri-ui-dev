@@ -1,6 +1,12 @@
+import DOM from "../DOM";
+
 let cachedLoader: HTMLElement;
 
-const render = (parent: HTMLElement) => {
+const render = (parent?: HTMLElement) => {
+  if (!parent) {
+    parent = DOM.getContainer();
+  }
+
   if (cachedLoader) {
     parent.appendChild(cachedLoader);
     return;
