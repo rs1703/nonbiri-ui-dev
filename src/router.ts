@@ -1,10 +1,14 @@
 export interface Route {
   name: string;
   path: string;
-  component: { render: () => void };
+  component: { render: () => void; destroy?: () => void };
 }
 
 export type Routes = { [key: string]: Route };
+
+export interface State {
+  preventDefault?: boolean;
+}
 
 class Router {
   private title: string;
@@ -39,6 +43,10 @@ class Router {
     return window.location.pathname + window.location.search;
   }
 
+  getCurrentExtensionId() {
+    return window.location.pathname.split("/")[2];
+  }
+
   setTitle(text?: string) {
     if (text?.length) {
       const next = `${text} - ${this.title}`;
@@ -52,17 +60,22 @@ class Router {
     } else document.title = this.title;
   }
 
-  navigate(path: string) {
+  navigate(path: string, state: State = {}) {
     const currentPath = window.location.pathname + window.location.search;
     if (currentPath === path) {
       return;
     }
 
-    window.history.pushState({}, "", path);
+    window.history.pushState(state, "", path);
     window.dispatchEvent(new Event("popstate"));
   }
 
-  private async onChange() {
+  private async onChange(ev?: PopStateEvent) {
+    if (ev) {
+      const state = (ev.state || window.history.state) as State;
+      if (state.preventDefault) return;
+    }
+
     if (this.mutex.current) {
       await new Promise<void>(resolve => {
         const interval = setInterval(() => {
@@ -77,18 +90,20 @@ class Router {
 
     this.mutex.current = true;
     try {
+      if (this.currentRoute?.component?.destroy) {
+        this.currentRoute.component.destroy();
+      }
+
       this.currentRoute = this.getCurrentRoute();
       this.setTitle();
 
       this.onChangeHandlers.forEach(handler => handler());
-      this.render();
+      if (this.currentRoute?.component?.render) {
+        this.currentRoute.component.render();
+      }
     } finally {
       this.mutex.current = false;
     }
-  }
-
-  private render() {
-    this.currentRoute?.component?.render();
   }
 }
 

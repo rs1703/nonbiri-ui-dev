@@ -1,4 +1,4 @@
-import DOM from "../DOM";
+import DOM from "../../DOM";
 
 const render = () => {
   DOM.clear();
