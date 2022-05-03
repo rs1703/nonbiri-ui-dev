@@ -2,7 +2,6 @@ import { Router, sendRequest } from "../../App";
 import DOM from "../../DOM";
 import Filter from "../Filter";
 import { FilterIcon, SearchIcon } from "../Icons";
-import ViewMode from "../ViewMode";
 import Context from "./Context";
 
 const SearchForm = () => {
@@ -140,7 +139,7 @@ const Actions = async () => {
     DOM.getContainer().appendChild(showBtn);
   });
 
-  actions.append(hideBtn, ViewMode("browse"), SearchForm(), Filters());
+  actions.append(hideBtn, SearchForm(), Filters());
 
   return actions;
 };
