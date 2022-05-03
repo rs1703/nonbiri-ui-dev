@@ -1,5 +1,6 @@
 import { Router, sendRequest } from "../../App";
 import DOM from "../../DOM";
+import Entry from "../Entry";
 import loader from "../Loader";
 import Actions from "./Actions";
 import Context, { id } from "./Context";
@@ -38,42 +39,7 @@ const Browse = async () => {
 
     const data = await sendRequest<BrowseData>(url.href);
     const fragment = document.createDocumentFragment();
-
-    data.entries?.forEach(entry => {
-      if (!entry.path.startsWith("/")) {
-        entry.path = `/${entry.path}`;
-      }
-
-      const item = document.createElement("div");
-      item.classList.add("entry");
-
-      const anchor = DOM.createAnchor(`/view/${Context.currentExtension.id}${entry.path}`);
-
-      const top = document.createElement("div");
-      top.classList.add("figure");
-
-      const thumbnail = document.createElement("img");
-      thumbnail.classList.add("thumbnail");
-      thumbnail.src = entry.coverUrl;
-
-      top.appendChild(thumbnail);
-
-      const metadata = document.createElement("div");
-      metadata.classList.add("metadata");
-
-      const title = document.createElement("h3");
-      title.classList.add("title");
-
-      const span = document.createElement("span");
-      span.textContent = entry.title;
-
-      title.appendChild(span);
-      metadata.appendChild(title);
-
-      anchor.append(top, metadata);
-      item.appendChild(anchor);
-      fragment.appendChild(item);
-    });
+    data.entries?.forEach(e => fragment.appendChild(Entry(e)));
 
     if (data.hasNext) {
       const lastIdx = Math.max(0, Math.floor(data.entries.length / 2) - 1) || data.entries.length - 1;
