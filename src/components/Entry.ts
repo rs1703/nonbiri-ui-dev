@@ -1,6 +1,25 @@
 import DOM from "../DOM";
 import Context from "./Browse/Context";
 
+const loadImage = (url: string) =>
+  new Promise((resolve, reject) => {
+    let retryCount = 0;
+
+    const exec = () => {
+      const img = new Image();
+
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        if (retryCount++ < 3) exec();
+        else reject(new Error("Failed to load image"));
+      };
+
+      img.src = url;
+    };
+
+    exec();
+  });
+
 export default (data: Manga) => {
   if (!data.path.startsWith("/")) {
     data.path = `/${data.path}`;
@@ -12,12 +31,38 @@ export default (data: Manga) => {
   const anchor = DOM.createAnchor(`/view/${Context.currentExtension.id}${data.path}`);
   anchor.title = data.title;
 
+  let hideTimeout = 0;
+  const itemObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      clearInterval(hideTimeout);
+      if (entry.isIntersecting) {
+        item.appendChild(anchor);
+      } else {
+        hideTimeout = window.setTimeout(() => {
+          anchor.remove();
+        }, 10000);
+      }
+    });
+  });
+  itemObserver.observe(item);
+
   const figure = document.createElement("div");
   figure.classList.add("figure");
 
-  const thumbnail = document.createElement("img");
+  const thumbnail = document.createElement("div");
   thumbnail.classList.add("thumbnail");
-  thumbnail.src = data.coverUrl;
+
+  const thumbnailObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        thumbnailObserver.disconnect();
+        loadImage(data.coverUrl).then(() => {
+          thumbnail.style.backgroundImage = `url(${data.coverUrl})`;
+        });
+      }
+    });
+  });
+  thumbnailObserver.observe(thumbnail);
 
   figure.appendChild(thumbnail);
 
@@ -34,6 +79,5 @@ export default (data: Manga) => {
   metadata.appendChild(title);
 
   anchor.append(figure, metadata);
-  item.appendChild(anchor);
   return item;
 };
