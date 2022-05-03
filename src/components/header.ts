@@ -1,12 +1,18 @@
+import Headroom from "headroom.js";
 import { Router } from "../App";
 import DOM from "../DOM";
 import Routes from "../Routes";
 
 let cachedNavigation: HTMLElement;
 const createNavigation = () => {
-  if (cachedNavigation) return cachedNavigation;
+  if (cachedNavigation) {
+    return cachedNavigation;
+  }
 
   const nav = document.createElement("nav");
+  nav.classList.add("nav");
+  nav.ariaLabel = "Primary";
+
   const ul = document.createElement("ul");
 
   Object.values(Routes).forEach(route => {
@@ -53,6 +59,8 @@ const render = () => {
 
   header.append(createNavigation());
   root.appendChild(header);
+
+  new Headroom(header)?.init();
 };
 
 export default { render };
