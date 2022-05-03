@@ -40,7 +40,7 @@ export default (data: Manga) => {
       } else {
         hideTimeout = window.setTimeout(() => {
           anchor.remove();
-        }, 10000);
+        }, 5000);
       }
     });
   });
