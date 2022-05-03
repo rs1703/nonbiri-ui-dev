@@ -2,9 +2,7 @@ import DOM from "../DOM";
 
 const modes = {
   Thumbnail: "thumbnail",
-  "Thumbnail Compact": "thumbnail-compact",
-  List: "list",
-  "List Compact": "list-compact"
+  "Thumbnail Compact": "thumbnail-compact"
 };
 
 const ViewMode = (key: string) => {
