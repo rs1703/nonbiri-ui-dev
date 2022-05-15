@@ -1,13 +1,14 @@
 let cachedCog: SVGSVGElement;
-export const CogIcon = () => {
+export const CogIcon = (size = 24) => {
   if (cachedCog) {
     return cachedCog;
   }
 
+  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", "24");
-  svg.setAttribute("height", "24");
+  svg.setAttribute("width", sizeStr);
+  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
   svg.setAttribute("stroke-width", "2");
@@ -31,15 +32,16 @@ export const CogIcon = () => {
 };
 
 let cachedSearch: SVGSVGElement;
-export const SearchIcon = () => {
+export const SearchIcon = (size = 24) => {
   if (cachedSearch) {
     return cachedSearch;
   }
 
+  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", "24");
-  svg.setAttribute("height", "24");
+  svg.setAttribute("width", sizeStr);
+  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
   svg.setAttribute("stroke-width", "2");
@@ -63,15 +65,16 @@ export const SearchIcon = () => {
 };
 
 let cachedFilter: SVGSVGElement;
-export const FilterIcon = () => {
+export const FilterIcon = (size = 24) => {
   if (cachedFilter) {
     return cachedFilter;
   }
 
+  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", "24");
-  svg.setAttribute("height", "24");
+  svg.setAttribute("width", sizeStr);
+  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
   svg.setAttribute("stroke-width", "2");
