@@ -1,19 +1,30 @@
 let cachedCog: SVGSVGElement;
-export const CogIcon = (size = 24) => {
+
+interface Options {
+  size?: number;
+  strokeWidth?: number;
+}
+
+const applyOptions = (svg: SVGElement, opts?: Options) => {
+  const size = opts?.size.toString() || "24";
+  const strokeWidth = opts?.strokeWidth.toString() || "2";
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", size);
+  svg.setAttribute("stroke-width", strokeWidth);
+};
+
+export const CogIcon = (opts?: Options) => {
   if (cachedCog) {
     return cachedCog;
   }
 
-  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", sizeStr);
-  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
+  applyOptions(svg, opts);
 
   const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   circle.setAttribute("cx", "12");
@@ -32,21 +43,18 @@ export const CogIcon = (size = 24) => {
 };
 
 let cachedSearch: SVGSVGElement;
-export const SearchIcon = (size = 24) => {
+export const SearchIcon = (opts?: Options) => {
   if (cachedSearch) {
     return cachedSearch;
   }
 
-  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", sizeStr);
-  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
+  applyOptions(svg, opts);
 
   const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   circle.setAttribute("cx", "11");
@@ -65,21 +73,18 @@ export const SearchIcon = (size = 24) => {
 };
 
 let cachedFilter: SVGSVGElement;
-export const FilterIcon = (size = 24) => {
+export const FilterIcon = (opts?: Options) => {
   if (cachedFilter) {
     return cachedFilter;
   }
 
-  const sizeStr = size.toString();
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", sizeStr);
-  svg.setAttribute("height", sizeStr);
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
+  applyOptions(svg, opts);
 
   const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   polygon.setAttribute("points", "22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3");
