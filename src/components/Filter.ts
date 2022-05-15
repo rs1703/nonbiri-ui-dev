@@ -1,6 +1,6 @@
 export default (filter: Filter) => {
   const root = document.createElement("div");
-  root.classList.add(`filter-${filter.key}`, filter.key);
+  root.classList.add("filter", `filter-${filter.key}`, filter.key);
   root.dataset.key = filter.key;
   root.dataset.type = filter.type;
 
