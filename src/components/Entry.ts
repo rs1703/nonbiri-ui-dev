@@ -1,3 +1,4 @@
+import { Router } from "../App";
 import DOM from "../DOM";
 import Context from "./Browse/Context";
 
@@ -29,6 +30,10 @@ export default (data: Manga) => {
   item.classList.add("entry");
 
   const anchor = DOM.createAnchor(`/view/${Context.currentExtension.id}${data.path}`);
+  anchor.addEventListener("click", ev => {
+    ev.preventDefault();
+    Router.navigate(anchor.href);
+  });
   anchor.title = data.title;
 
   let hideTimeout = 0;
@@ -77,7 +82,6 @@ export default (data: Manga) => {
 
   title.appendChild(span);
   metadata.appendChild(title);
-
   anchor.append(figure, metadata);
   return item;
 };
