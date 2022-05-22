@@ -1,7 +1,11 @@
 export interface Route {
   name: string;
   path: string;
-  component: { render: () => void; destroy?: () => void };
+  component: {
+    ignoreStates?: string[];
+    render: () => void;
+    destroy?: () => void;
+  };
 }
 
 export type Routes = { [key: string]: Route };
@@ -47,6 +51,24 @@ class Router {
     return window.location.pathname.split("/")[2];
   }
 
+  navigate(path: string, state: State = {}) {
+    const currentPath = this.getCurrentPath();
+    if (currentPath === path) {
+      return;
+    }
+
+    if (window.history.state) {
+      Object.keys(window.history.state).forEach(key => {
+        if (key.startsWith("last")) {
+          state[key] = window.history.state[key];
+        }
+      });
+    }
+
+    window.history.pushState(state, "", path);
+    window.dispatchEvent(new Event("popstate"));
+  }
+
   setTitle(text?: string) {
     if (text?.length) {
       const next = `${text} - ${this.title}`;
@@ -60,21 +82,13 @@ class Router {
     } else document.title = this.title;
   }
 
-  navigate(path: string, state: State = {}) {
-    const currentPath = window.location.pathname + window.location.search;
-    if (currentPath === path) {
-      return;
-    }
-
-    window.history.pushState(state, "", path);
-    window.dispatchEvent(new Event("popstate"));
+  setState(state: any = {}) {
+    window.history.replaceState(state, "", this.getCurrentPath());
   }
 
   private async onChange(ev?: PopStateEvent) {
-    if (ev) {
-      const state = (ev.state || window.history.state) as State;
-      if (state.preventDefault) return;
-    }
+    const state = (window.history.state || ev?.state) as State;
+    if (state?.preventDefault) return;
 
     if (this.mutex.current) {
       await new Promise<void>(resolve => {
@@ -99,6 +113,15 @@ class Router {
 
       this.onChangeHandlers.forEach(handler => handler());
       if (this.currentRoute?.component?.render) {
+        if (state && this.currentRoute.component.ignoreStates) {
+          Object.keys(state).forEach(key => {
+            if (!this.currentRoute.component.ignoreStates.includes(key)) {
+              delete window.history.state[key];
+            }
+          });
+        } else {
+          window.history.replaceState({}, "", this.getCurrentPath());
+        }
         this.currentRoute.component.render();
       }
     } finally {

@@ -7,8 +7,9 @@ export const Router = {
   getCurrentRoute: () => router.getCurrentRoute(),
   getCurrentPath: () => router.getCurrentPath(),
   getCurrentExtensionId: () => router.getCurrentExtensionId(),
+  navigate: (path: string, state?: State) => router.navigate(path, state),
   setTitle: (text?: string) => router.setTitle(text),
-  navigate: (path: string, state: State = {}) => router.navigate(path, state)
+  setState: (state?: any) => router.setState(state)
 };
 
 export const sendRequest = async <T = any>(path: string, method = "GET", body?: any): Promise<T> =>
