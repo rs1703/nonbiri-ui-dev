@@ -8,4 +8,5 @@ const Context = {
   installedExtensions: new Map<string, Extension>(),
   filters: undefined as Set<Filter>
 };
+
 export default Context;

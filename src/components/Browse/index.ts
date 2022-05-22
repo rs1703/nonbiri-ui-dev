@@ -14,12 +14,14 @@ interface BrowseData {
   execDuration: number;
 }
 
+const ignoreFields = ["q", "id"];
+const ignoreStates = ["lastBrowseData", "lastBrowseEntries"];
+
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
 
-const Browse = async () => {
+const create = async () => {
   Router.setTitle(Context.currentExtension.name);
-  let currentPage = 0;
 
   const url = new URL(window.location.origin);
   url.search = window.location.search;
@@ -28,34 +30,51 @@ const Browse = async () => {
   const container = document.createElement("div");
   container.classList.add("entries");
 
-  const ignore = ["q", "id"];
-  const fetch = async (page = 1) => {
-    currentPage = page;
+  let lastBrowseData: BrowseData = window.history.state?.lastBrowseData || undefined;
+  const lastBrowseEntries: Manga[] = window.history.state?.lastBrowseEntries || [];
+  let currentPage: number = lastBrowseData?.page || 1;
 
+  let appendEntries: (data: Manga[], hasNext: boolean) => void;
+  const fetch = async (page: number) => {
     url.searchParams.set("page", page.toString());
-    if (Array.from(url.searchParams.keys()).some(key => !ignore.includes(key))) {
+    if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
       url.pathname = "/api/search";
     } else url.pathname = "/api/manga";
 
     const data = await sendRequest<BrowseData>(url.href);
-    const fragment = document.createDocumentFragment();
-    data.entries?.forEach(e => fragment.appendChild(Entry(e)));
+    appendEntries(data.entries, data.hasNext);
 
-    if (data.hasNext) {
-      const lastIdx = Math.max(0, Math.floor(data.entries.length / 2) - 1) || data.entries.length - 1;
+    lastBrowseData = data;
+    if (data.entries?.length) {
+      lastBrowseEntries.push(...data.entries);
+    }
+
+    currentPage = page;
+    window.dispatchEvent(new Event("pagination"));
+    Router.setState({ lastBrowseData, lastBrowseEntries });
+  };
+
+  appendEntries = (data: Manga[], hasNext: boolean) => {
+    if (!data?.length) return;
+
+    const fragment = document.createDocumentFragment();
+    data?.forEach(e => fragment.appendChild(Entry(e)));
+
+    if (hasNext) {
+      const lastIdx = Math.max(0, Math.floor(data.length / 2) - 1) || data.length - 1;
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          fetch(page + 1);
+          fetch(currentPage + 1);
         }
       });
       observer.observe(fragment.children[lastIdx]);
     }
-
     container.appendChild(fragment);
-    window.dispatchEvent(new Event("pagination"));
   };
-  await fetch();
+
+  if (currentPage === 1) await fetch(currentPage);
+  else appendEntries(lastBrowseEntries, lastBrowseData.hasNext);
 
   searchParamsChangeEventListener = async () => {
     if (window.location.search !== url.search) {
@@ -66,8 +85,11 @@ const Browse = async () => {
       url.search = window.location.search;
       url.searchParams.set("id", Context.currentExtension.id);
 
+      lastBrowseData = undefined;
+      lastBrowseEntries.length = 0;
+
       loader.render();
-      await fetch();
+      await fetch(1);
       loader.destroy();
     }
   };
@@ -98,11 +120,11 @@ const render = async () => {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
     if (Context.currentExtension) {
       loader.render();
-      const actions = await Actions();
-      const main = await Browse();
+      const main = await create();
+      const actions = await Actions.create();
       loader.destroy();
 
-      container.append(actions, main);
+      container.append(main, actions);
     } else Router.navigate("/browse");
   } else {
     const header = document.createElement("header");
@@ -139,6 +161,8 @@ const destroy = () => {
   if (pageChangeEventListener) {
     window.removeEventListener("pagination", pageChangeEventListener);
   }
+
+  Actions.destroy();
 };
 
-export default { render, destroy };
+export default { ignoreStates, render, destroy };
