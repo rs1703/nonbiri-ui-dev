@@ -1,7 +1,7 @@
 import { Router, sendRequest } from "../../App";
 import DOM from "../../DOM";
 import Entry from "../Entry";
-import loader from "../Loader";
+import { WithLoader } from "../Loader";
 import Actions from "./Actions";
 import Context, { id } from "./Context";
 import { Extensions, Sources } from "./list";
@@ -65,7 +65,7 @@ const create = async () => {
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          fetch(currentPage + 1);
+          WithLoader(() => fetch(currentPage + 1));
         }
       });
       observer.observe(fragment.children[lastIdx]);
@@ -88,9 +88,7 @@ const create = async () => {
       lastBrowseData = undefined;
       lastBrowseEntries.length = 0;
 
-      loader.render();
-      await fetch(1);
-      loader.destroy();
+      await WithLoader(() => fetch(1));
     }
   };
 
@@ -109,21 +107,21 @@ const render = async () => {
 
   const container = DOM.createContainer("browse");
   if (!Context.extensions.size) {
-    loader.render();
-    (await sendRequest<Extension[]>("/api/extensions/index"))?.forEach(ext => Context.extensions.set(ext.id, ext));
-    (await sendRequest<Extension[]>("/api/extensions"))?.forEach(ext => Context.installedExtensions.set(ext.id, ext));
-    loader.destroy();
+    await WithLoader(async () => {
+      (await sendRequest<Extension[]>("/api/extensions/index"))?.forEach(ext => Context.extensions.set(ext.id, ext));
+      (await sendRequest<Extension[]>("/api/extensions"))?.forEach(ext => Context.installedExtensions.set(ext.id, ext));
+    });
   }
 
   const currExtId = Router.getCurrentExtensionId();
   if (currExtId) {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
     if (Context.currentExtension) {
-      loader.render();
-      const main = await create();
-      const actions = await Actions.create();
-      loader.destroy();
-
+      // prettier-ignore
+      const [main, actions] = await WithLoader(async () => [
+        await create(), 
+        await Actions.create(),
+      ]);
       container.append(main, actions);
     } else Router.navigate("/browse");
   } else {

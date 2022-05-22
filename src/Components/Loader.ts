@@ -1,15 +1,8 @@
 import DOM from "../DOM";
 
-let cachedLoader: HTMLElement;
-
-const render = (parent?: HTMLElement) => {
+const Loader = (parent?: HTMLElement) => {
   if (!parent) {
     parent = DOM.getContainer();
-  }
-
-  if (cachedLoader) {
-    parent.appendChild(cachedLoader);
-    return;
   }
 
   const loader = document.createElement("div");
@@ -31,13 +24,16 @@ const render = (parent?: HTMLElement) => {
 
   spinner.appendChild(circle);
   loader.append(spinner);
-
-  cachedLoader = loader;
   parent.append(loader);
+
+  return loader;
 };
 
-const destroy = () => {
-  cachedLoader?.remove();
+export const WithLoader = async <T>(callback: () => Promise<T>, parent?: HTMLElement) => {
+  const loader = Loader(parent);
+  const result = await callback();
+  loader.remove();
+  return result;
 };
 
-export default { render, destroy };
+export default Loader;
