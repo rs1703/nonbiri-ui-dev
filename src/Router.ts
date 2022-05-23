@@ -46,7 +46,7 @@ class Router {
       return;
     }
 
-    if (this.currentRoute) {
+    if (this.currentRoute && this.currentRoute.name) {
       const next = `${this.currentRoute.name} - ${this.title}`;
       if (document.title !== next) document.title = next;
     } else document.title = this.title;
