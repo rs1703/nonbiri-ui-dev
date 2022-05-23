@@ -2,9 +2,6 @@ import { generateUniqueString } from "../../App";
 
 export const id = generateUniqueString();
 
-const Context = {
-  currentExtension: undefined as Extension,
-  data: undefined as Manga
-};
+const Context: ViewContext = {};
 
 export default Context;
