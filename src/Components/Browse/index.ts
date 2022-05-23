@@ -20,6 +20,12 @@ const ignoreStates = ["lastBrowseData", "lastBrowseEntries"];
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
 
+const paginationLoaderOptions = {
+  classList: ["pagination"],
+  size: 40,
+  strokeWidth: 2
+};
+
 const create = async () => {
   Router.setTitle(Context.currentExtension.name);
 
@@ -65,7 +71,7 @@ const create = async () => {
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          WithLoader(() => fetch(currentPage + 1));
+          WithLoader(() => fetch(currentPage + 1), paginationLoaderOptions);
         }
       });
       observer.observe(fragment.children[lastIdx]);
@@ -88,13 +94,17 @@ const create = async () => {
       lastBrowseData = undefined;
       lastBrowseEntries.length = 0;
 
-      await WithLoader(() => fetch(1));
+      await WithLoader(() => fetch(1), paginationLoaderOptions);
     }
   };
 
   pageChangeEventListener = () => {
     Router.setTitle(`${Context.currentExtension.name} - Browse: Page ${currentPage}`);
   };
+
+  if (currentPage > 1) {
+    pageChangeEventListener(undefined);
+  }
 
   window.addEventListener("popstate", searchParamsChangeEventListener);
   window.addEventListener("pagination", pageChangeEventListener);
