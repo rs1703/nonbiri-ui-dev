@@ -25,3 +25,18 @@ export const generateUniqueString = () => {
   }
   return result;
 };
+
+export const formatUnix = (unix: number) => {
+  const time = new Date(unix);
+  const month = (time.getMonth() + 1).toString().padStart(2, "0");
+  const date = time.getDate().toString().padStart(2, "0");
+  const year = time.getFullYear().toString().slice(-2);
+  const hours = time.getHours().toString().padStart(2, "0");
+  const minutes = time.getMinutes().toString().padStart(2, "0");
+  return `${month}/${date}/${year} ${hours}:${minutes}`;
+};
+
+export const formatGroups = (groups: string[]) => {
+  const lastGroupName = groups?.pop();
+  return groups?.length ? `${groups.join(", ")} & ${lastGroupName}` : lastGroupName;
+};

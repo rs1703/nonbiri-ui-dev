@@ -21,13 +21,23 @@ getRoot = () => (rootElement ??= document.getElementById("app"));
 const getHeader = () => document.getElementById("header");
 const getContainer = () => container;
 
-const createAnchor = (href: string) => {
-  const anchor = document.createElement("a");
+interface Anchor extends HTMLAnchorElement {
+  addClickPreHook: (fn: () => void) => void;
+  removeClickPreHook: (fn: () => void) => void;
+}
+
+const createAnchor = <T>(href: string, state: State<T> = {}) => {
+  const anchor = document.createElement("a") as Anchor;
   anchor.href = href;
+
+  const preHooks = new Set<() => void>();
+  anchor.addClickPreHook = fn => preHooks.add(fn);
+  anchor.removeClickPreHook = fn => preHooks.delete(fn);
 
   anchor.addEventListener("click", ev => {
     ev.preventDefault();
-    Router.navigate(anchor.href);
+    preHooks.forEach(fn => fn());
+    Router.navigate(anchor.href, state);
   });
 
   return anchor;
@@ -36,8 +46,7 @@ const createAnchor = (href: string) => {
 const createContainer = (id: string, ...classes: string[]) => {
   if (container) return container;
 
-  container = document.createElement("div");
-  container.classList.add("main");
+  container = document.createElement("main");
   container.id = id;
 
   if (classes.length) {

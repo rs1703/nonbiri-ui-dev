@@ -1,5 +1,4 @@
 import DOM from "../DOM";
-import Context from "./Browse/Context";
 
 const loadImage = (url: string) =>
   new Promise((resolve, reject) => {
@@ -20,7 +19,7 @@ const loadImage = (url: string) =>
     exec();
   });
 
-export default (data: Manga) => {
+export default (extId: string, data: Manga) => {
   if (!data.path.startsWith("/")) {
     data.path = `/${data.path}`;
   }
@@ -28,7 +27,7 @@ export default (data: Manga) => {
   const item = document.createElement("div");
   item.classList.add("entry");
 
-  const anchor = DOM.createAnchor(`/view/${Context.currentExtension.id}${data.path}`);
+  const anchor = DOM.createAnchor(`/view/${extId}${data.path}`, { data });
   anchor.title = data.title;
 
   let hideTimeout = 0;

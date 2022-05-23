@@ -14,10 +14,30 @@ interface State<T = any> {
   lastBrowseContext?: BrowseContext;
 }
 
+declare enum MangaStatus {
+  Ongoing = 1,
+  Completed,
+  Hiatus,
+  Dropped
+}
+
+interface Chapter {
+  path: string;
+  name: string;
+  publishedAt: number;
+  groups?: string[];
+}
+
 interface Manga {
   path: string;
   coverUrl: string;
   title: string;
+  description?: string;
+  status?: MangaStatus;
+  artists?: string[];
+  authors?: string[];
+  genres?: string[];
+  chapters?: Chapter[];
 }
 
 interface Filter {
@@ -27,12 +47,18 @@ interface Filter {
   options: { [key: string]: string };
 }
 
-interface BrowseData {
+interface ApiBrowseResponse {
   id: string;
   page: number;
   hasNext: boolean;
   entries: Manga[];
   execDuration: number;
+}
+
+interface ApiChapterResponse {
+  id: string;
+  entries: Chapter[];
+  execDuration: string;
 }
 
 interface Extension {

@@ -4,6 +4,10 @@ interface BrowseContext {
   installedExtensions: Map<string, Extension>;
   filters?: Set<Filter>;
 
-  data?: BrowseData;
+  data?: ApiBrowseResponse;
   entries: Manga[];
+}
+
+interface ViewContext {
+  data?: Manga;
 }

@@ -13,7 +13,7 @@ const ignoreStates = ["lastBrowseContext"];
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
 
-const paginationLoaderOptions = {
+const loaderOptions = {
   classList: ["pagination"],
   size: 40,
   strokeWidth: 2
@@ -39,7 +39,7 @@ const create = async () => {
         url.pathname = "/api/search";
       } else url.pathname = "/api/manga";
 
-      Context.data = await sendRequest<BrowseData>(url.href);
+      Context.data = await sendRequest<ApiBrowseResponse>(url.href);
       appendEntries(Context.data.entries, Context.data.hasNext);
 
       if (Context.data.entries?.length) {
@@ -57,14 +57,14 @@ const create = async () => {
     if (!data?.length) return;
 
     const fragment = document.createDocumentFragment();
-    data?.forEach(e => fragment.appendChild(Entry(e)));
+    data?.forEach(e => fragment.appendChild(Entry(Context.currentExtension.id, e)));
 
     if (hasNext) {
       const lastIdx = Math.max(0, Math.floor(data.length / 2) - 1);
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          WithLoader(() => paginate(currentPage + 1), paginationLoaderOptions);
+          WithLoader(() => paginate(currentPage + 1), loaderOptions);
         }
       });
       observer.observe(fragment.children[lastIdx]);
@@ -88,7 +88,7 @@ const create = async () => {
       Context.data = undefined;
       Context.entries = [];
 
-      await WithLoader(() => paginate(1), paginationLoaderOptions);
+      await WithLoader(() => paginate(1), loaderOptions);
     }
   };
 
