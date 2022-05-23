@@ -74,6 +74,7 @@ class Router {
       });
     }
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
     window.history.pushState(state, "", path);
     window.dispatchEvent(new Event("popstate"));
   }
