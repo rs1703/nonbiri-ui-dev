@@ -1,6 +1,6 @@
 import Headroom from "headroom.js";
-import { Router } from "../App";
 import DOM from "../DOM";
+import Router from "../Router";
 import Routes from "../Routes";
 
 let cachedNavigation: HTMLElement;
@@ -16,6 +16,8 @@ const createNavigation = () => {
   const ul = document.createElement("ul");
 
   Object.values(Routes).forEach(route => {
+    if (!route.name) return;
+
     const li = document.createElement("li");
     if (Router.getCurrentPath() === route.path) {
       li.classList.add("active");
@@ -35,6 +37,7 @@ const createNavigation = () => {
         if (!li.classList.contains("active")) li.classList.add("active");
       }
 
+      console.info("Header.ts Router.navigate");
       Router.navigate(a.href);
     });
 

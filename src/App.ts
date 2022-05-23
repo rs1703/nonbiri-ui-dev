@@ -1,17 +1,3 @@
-import R, { State } from "./Router";
-
-let router: R;
-
-export const Router = {
-  init: () => router.init(),
-  getCurrentRoute: () => router.getCurrentRoute(),
-  getCurrentPath: () => router.getCurrentPath(),
-  getCurrentExtensionId: () => router.getCurrentExtensionId(),
-  navigate: (path: string, state?: State) => router.navigate(path, state),
-  setTitle: (text?: string) => router.setTitle(text),
-  setState: (state?: any) => router.setState(state)
-};
-
 export const sendRequest = async <T = any>(path: string, method = "GET", body?: any): Promise<T> =>
   new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -38,8 +24,4 @@ export const generateUniqueString = () => {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-};
-
-export default {
-  setRouter: (r: R) => (router = r)
 };

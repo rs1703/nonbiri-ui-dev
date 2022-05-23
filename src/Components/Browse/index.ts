@@ -1,21 +1,14 @@
-import { Router, sendRequest } from "../../App";
+import { sendRequest } from "../../App";
 import DOM from "../../DOM";
+import Router from "../../Router";
 import Entry from "../Entry";
 import { WithLoader } from "../Loader";
 import Actions from "./Actions";
 import Context, { id } from "./Context";
 import { Extensions, Sources } from "./list";
 
-interface BrowseData {
-  id: string;
-  page: number;
-  hasNext: boolean;
-  entries: Manga[];
-  execDuration: number;
-}
-
 const ignoreFields = ["q", "id"];
-const ignoreStates = ["lastBrowseData", "lastBrowseEntries"];
+const ignoreStates = ["lastBrowseContext"];
 
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
@@ -36,28 +29,28 @@ const create = async () => {
   const container = document.createElement("div");
   container.classList.add("entries");
 
-  let lastBrowseData: BrowseData = window.history.state?.lastBrowseData || undefined;
-  const lastBrowseEntries: Manga[] = window.history.state?.lastBrowseEntries || [];
-  let currentPage: number = lastBrowseData?.page || 1;
-
   let appendEntries: (data: Manga[], hasNext: boolean) => void;
-  const fetch = async (page: number) => {
-    url.searchParams.set("page", page.toString());
-    if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
-      url.pathname = "/api/search";
-    } else url.pathname = "/api/manga";
+  let currentPage: number = Context.data?.page || 1;
 
-    const data = await sendRequest<BrowseData>(url.href);
-    appendEntries(data.entries, data.hasNext);
+  const paginate = async (page: number) => {
+    try {
+      url.searchParams.set("page", page.toString());
+      if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
+        url.pathname = "/api/search";
+      } else url.pathname = "/api/manga";
 
-    lastBrowseData = data;
-    if (data.entries?.length) {
-      lastBrowseEntries.push(...data.entries);
+      Context.data = await sendRequest<BrowseData>(url.href);
+      appendEntries(Context.data.entries, Context.data.hasNext);
+
+      if (Context.data.entries?.length) {
+        Context.entries.push(...Context.data.entries);
+      }
+
+      window.dispatchEvent(new Event("pagination"));
+      Router.setState({ lastBrowseContext: Context });
+    } finally {
+      currentPage = page;
     }
-
-    currentPage = page;
-    window.dispatchEvent(new Event("pagination"));
-    Router.setState({ lastBrowseData, lastBrowseEntries });
   };
 
   appendEntries = (data: Manga[], hasNext: boolean) => {
@@ -67,11 +60,11 @@ const create = async () => {
     data?.forEach(e => fragment.appendChild(Entry(e)));
 
     if (hasNext) {
-      const lastIdx = Math.max(0, Math.floor(data.length / 2) - 1) || data.length - 1;
+      const lastIdx = Math.max(0, Math.floor(data.length / 2) - 1);
       const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          WithLoader(() => fetch(currentPage + 1), paginationLoaderOptions);
+          WithLoader(() => paginate(currentPage + 1), paginationLoaderOptions);
         }
       });
       observer.observe(fragment.children[lastIdx]);
@@ -79,8 +72,9 @@ const create = async () => {
     container.appendChild(fragment);
   };
 
-  if (currentPage === 1) await fetch(currentPage);
-  else appendEntries(lastBrowseEntries, lastBrowseData.hasNext);
+  if (Context.data && Context.entries?.length) {
+    appendEntries(Context.entries, Context.data.hasNext);
+  } else await paginate(currentPage);
 
   searchParamsChangeEventListener = async () => {
     if (window.location.search !== url.search) {
@@ -91,10 +85,10 @@ const create = async () => {
       url.search = window.location.search;
       url.searchParams.set("id", Context.currentExtension.id);
 
-      lastBrowseData = undefined;
-      lastBrowseEntries.length = 0;
+      Context.data = undefined;
+      Context.entries = [];
 
-      await WithLoader(() => fetch(1), paginationLoaderOptions);
+      await WithLoader(() => paginate(1), paginationLoaderOptions);
     }
   };
 
@@ -115,6 +109,11 @@ const create = async () => {
 const render = async () => {
   DOM.clear();
 
+  const state = Router.getState();
+  if (state.lastBrowseContext) {
+    Object.assign(Context, state.lastBrowseContext);
+  }
+
   const container = DOM.createContainer("browse");
   if (!Context.extensions.size) {
     await WithLoader(async () => {
@@ -133,7 +132,10 @@ const render = async () => {
         await Actions.create(),
       ]);
       container.append(main, actions);
-    } else Router.navigate("/browse");
+    } else {
+      console.info("Browse.index.ts Router.navigate");
+      Router.navigate("/browse");
+    }
   } else {
     const header = document.createElement("header");
     header.classList.add(id);

@@ -1,4 +1,4 @@
-import { Router } from "../../../App";
+import Router from "../../../Router";
 import { SearchIcon } from "../../Icons";
 
 const sync = () => {
@@ -33,9 +33,8 @@ const create = () => {
     if (input.value) url.searchParams.set("q", input.value);
     else url.searchParams.delete("q");
 
-    Router.navigate(url.pathname + url.search, {
-      preventDefault: true
-    });
+    console.info("SearchForm.ts Router.navigate");
+    Router.navigate(url.pathname + url.search, { preventDefault: true });
 
     sync();
   });

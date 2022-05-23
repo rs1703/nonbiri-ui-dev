@@ -1,4 +1,4 @@
-import { Router } from "../../../App";
+import Router from "../../../Router";
 import Filter from "../../Filter";
 import Context from "../Context";
 
@@ -64,9 +64,8 @@ const create = () => {
       }
     });
 
-    Router.navigate(url.pathname + url.search, {
-      preventDefault: true
-    });
+    console.info("Filters.ts Router.navigate");
+    Router.navigate(url.pathname + url.search, { preventDefault: true });
   });
 
   footer.append(resetBtn, applyBtn);

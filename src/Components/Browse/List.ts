@@ -1,5 +1,5 @@
-import { Router } from "../../App";
 import DOM from "../../DOM";
+import Router from "../../Router";
 import Context, { id } from "./Context";
 
 const createExtItem = (ext: Extension) => {
@@ -31,7 +31,7 @@ const createExtItem = (ext: Extension) => {
 
 const attachSourceOnClick = (ext: Extension, btn: HTMLButtonElement) => {
   btn.addEventListener("click", ev => {
-    ev.preventDefault();
+    console.info("List.ts Router.navigate");
     Router.navigate(`/browse/${ext.id}`);
   });
 };

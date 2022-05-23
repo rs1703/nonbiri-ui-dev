@@ -7,9 +7,11 @@ import Filters from "./Filters";
 import SearchForm from "./SearchForm";
 
 const create = async () => {
-  await sendRequest<Filter[]>(`/api/extensions/filters?id=${Context.currentExtension.id}`).then(
-    filters => (Context.filters = new Set(filters))
-  );
+  if (!Context.filters?.size) {
+    await sendRequest<Filter[]>(`/api/extensions/filters?id=${Context.currentExtension.id}`).then(
+      filters => (Context.filters = new Set(filters))
+    );
+  }
 
   const popup = new Popup();
   popup.root.classList.add("actions");

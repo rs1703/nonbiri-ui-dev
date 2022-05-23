@@ -2,8 +2,9 @@ import Browse from "./Components/Browse";
 import History from "./Components/History";
 import Library from "./Components/Library";
 import Updates from "./Components/Updates";
+import View from "./Components/View";
 
-const Routes = {
+const Routes: { [key: string]: Route } = {
   library: {
     name: "Library",
     path: "/",
@@ -23,6 +24,11 @@ const Routes = {
     name: "Browse",
     path: "/browse",
     component: Browse
+  },
+
+  view: {
+    path: "/view",
+    component: View
   }
 };
 

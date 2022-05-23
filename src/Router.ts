@@ -1,72 +1,42 @@
-export interface Route {
-  name: string;
-  path: string;
-  component: {
-    ignoreStates?: string[];
-    render: () => void;
-    destroy?: () => void;
-  };
-}
-
-export type Routes = { [key: string]: Route };
-
-export interface State {
-  preventDefault?: boolean;
-}
+type Routes = {
+  [key: string]: Route;
+};
 
 class Router {
   private title: string;
   private routes: Routes;
   private mutex = { current: false };
 
-  constructor(routes: Routes) {
-    this.title = document.title;
-    this.routes = Object.fromEntries(Object.values(routes).map(r => [r.path, r]));
-    window.addEventListener("popstate", this.onChange.bind(this));
-  }
-
-  private onChangeHandlers: Array<() => void> = [];
-  addOnChangeHandler(handler: () => void) {
-    this.onChangeHandlers.push(handler);
-  }
-
   private initialized = false;
-  init() {
+  private currentRoute: Route;
+  private onChangeHandlers: Array<() => void> = [];
+
+  init(routes: Routes) {
     if (this.initialized) return;
     this.initialized = true;
+
+    this.title = document.title;
+    this.routes = Object.fromEntries(Object.values(routes).map(r => [r.path, r]));
+
+    window.addEventListener("popstate", this.onChange.bind(this));
     this.onChange();
-  }
-
-  private currentRoute: Route;
-  getCurrentRoute() {
-    const path = `/${window.location.pathname.split("/")[1].toLowerCase()}`;
-    return this.routes[path];
-  }
-
-  getCurrentPath() {
-    return window.location.pathname + window.location.search;
   }
 
   getCurrentExtensionId() {
     return window.location.pathname.split("/")[2];
   }
 
-  navigate(path: string, state: State = {}) {
-    const currentPath = this.getCurrentPath();
-    if (currentPath === path) {
-      return;
-    }
+  getCurrentPath() {
+    return window.location.pathname + window.location.search;
+  }
 
-    if (window.history.state) {
-      Object.keys(window.history.state).forEach(key => {
-        if (key.startsWith("last")) {
-          state[key] = window.history.state[key];
-        }
-      });
-    }
+  getCurrentRoute() {
+    const path = `/${window.location.pathname.split("/")[1].toLowerCase()}`;
+    return this.routes[path];
+  }
 
-    window.history.pushState(state, "", path);
-    window.dispatchEvent(new Event("popstate"));
+  getState<T>() {
+    return window.history.state as State<T>;
   }
 
   setTitle(text?: string) {
@@ -82,8 +52,30 @@ class Router {
     } else document.title = this.title;
   }
 
-  setState(state: any = {}) {
+  setState<T>(state: State<T> = {}) {
     window.history.replaceState(state, "", this.getCurrentPath());
+  }
+
+  addOnChangeHandler(handler: () => void) {
+    this.onChangeHandlers.push(handler);
+  }
+
+  navigate<T>(path: string, state: State<T> = {}) {
+    const currentPath = this.getCurrentPath();
+    if (currentPath === path) {
+      return;
+    }
+
+    if (window.history.state) {
+      Object.keys(window.history.state).forEach(key => {
+        if (key.startsWith("last")) {
+          state[key] = window.history.state[key];
+        }
+      });
+    }
+
+    window.history.pushState(state, "", path);
+    window.dispatchEvent(new Event("popstate"));
   }
 
   private async onChange(ev?: PopStateEvent) {
@@ -130,4 +122,4 @@ class Router {
   }
 }
 
-export default Router;
+export default new Router();

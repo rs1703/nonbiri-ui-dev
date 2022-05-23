@@ -1,4 +1,4 @@
-import { Router } from "./App";
+import Router from "./Router";
 
 let rootElement: HTMLElement;
 let container: HTMLElement;
