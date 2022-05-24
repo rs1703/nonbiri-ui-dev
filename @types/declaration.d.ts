@@ -1,11 +1,15 @@
+interface Component {
+  keepCommons?: boolean;
+  ignoreStates?: string[];
+  create?(): HTMLElement;
+  destroy(): void;
+  render?(): Promise<void> | void;
+}
+
 interface Route {
   name?: string;
   path: string;
-  component: {
-    ignoreStates?: string[];
-    render: () => void;
-    destroy?: () => void;
-  };
+  component: Component;
 }
 
 interface State<T = any> {

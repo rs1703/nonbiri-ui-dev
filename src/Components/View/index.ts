@@ -1,5 +1,6 @@
 import { formatGroups, formatUnix, sendRequest } from "../../App";
-import DOM from "../../DOM";
+import DOM, { defineComponent } from "../../DOM";
+import { createAnchor } from "../../DOMElements";
 import Router from "../../Router";
 import Browse from "../Browse";
 import { WithLoader } from "../Loader";
@@ -46,50 +47,49 @@ class View {
     this.description = document.createElement("div");
     this.chapters = document.createElement("div");
 
-    const { banner, sidebar, cover, metadata, artists, authors, genres, body, title, description, chapters } = this;
-    banner.classList.add("banner");
-    sidebar.classList.add("sidebar");
-    metadata.classList.add("metadata");
-    artists.classList.add("artists");
-    authors.classList.add("authors");
-    genres.classList.add("genres");
-    body.classList.add("body");
-    title.classList.add("title");
-    description.classList.add("description");
-    chapters.classList.add("chapters");
+    this.banner.classList.add("banner");
+    this.sidebar.classList.add("sidebar");
+    this.metadata.classList.add("metadata");
+    this.artists.classList.add("artists");
+    this.authors.classList.add("authors");
+    this.genres.classList.add("genres");
+    this.body.classList.add("body");
+    this.title.classList.add("title");
+    this.description.classList.add("description");
+    this.chapters.classList.add("chapters");
 
     const bannerWrapper = document.createElement("div");
     const bannerShadow = document.createElement("div");
     bannerWrapper.classList.add("banner-wrapper");
     bannerShadow.classList.add("shadow");
-    bannerWrapper.append(banner, bannerShadow);
+    bannerWrapper.append(this.banner, bannerShadow);
 
     const figure = document.createElement("figure");
-    figure.classList.add("cover");
-    figure.appendChild(cover);
+    figure.classList.add("cover", "loading");
+    figure.appendChild(this.cover);
 
     {
       const list = document.createElement("ul");
       const label = document.createElement("b");
       label.textContent = "Artist(s)";
-      artists.append(label, list);
+      this.artists.append(label, list);
     }
     {
       const list = document.createElement("ul");
       const label = document.createElement("b");
       label.textContent = "Author(s)";
-      authors.append(label, list);
+      this.authors.append(label, list);
     }
     {
       const list = document.createElement("ul");
       const label = document.createElement("b");
       label.textContent = "Genre(s)";
-      genres.append(label, list);
+      this.genres.append(label, list);
     }
 
-    metadata.classList.add("metadata");
-    metadata.append(artists, authors, genres);
-    sidebar.append(figure, metadata);
+    this.metadata.classList.add("metadata");
+    this.metadata.append(this.artists, this.authors, this.genres);
+    this.sidebar.append(figure, this.metadata);
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("wrapper");
@@ -97,11 +97,11 @@ class View {
       const list = document.createElement("ul");
       const label = document.createElement("h2");
       label.textContent = "Chapters";
-      chapters.append(label, list);
+      this.chapters.append(label, list);
     }
 
-    body.append(title, description, chapters);
-    wrapper.append(sidebar, body);
+    this.body.append(this.title, this.description, this.chapters);
+    wrapper.append(this.sidebar, this.body);
 
     this.update();
     this.updateChapters();
@@ -110,28 +110,26 @@ class View {
   }
 
   update() {
-    const { banner, sidebar, cover, metadata, artists, authors, genres, body, title, description, chapters } = this;
-
-    if (Context.data?.coverUrl) {
-      banner.style.backgroundImage = `url(${Context.data.coverUrl})`;
-      cover.src = Context.data?.coverUrl;
+    if (Context.data?.coverUrl && this.cover.src !== Context.data?.coverUrl) {
+      this.banner.style.backgroundImage = `url(${Context.data.coverUrl})`;
+      this.cover.parentElement.classList.add("loading");
+      this.cover.src = Context.data?.coverUrl;
 
       const onCoverLoaded = () => {
-        cover.parentElement.classList.remove("loading");
-        if (cover.height < cover.width) {
-          cover.parentElement.classList.add("small");
-        } else cover.parentElement.classList.remove("small");
+        this.cover.parentElement.classList.remove("loading");
+        if (this.cover.height < this.cover.width) {
+          this.cover.parentElement.classList.add("small");
+        } else this.cover.parentElement.classList.remove("small");
       };
 
-      if (cover.complete) onCoverLoaded();
+      if (this.cover.complete) onCoverLoaded();
       else {
-        cover.parentElement.classList.add("loading");
-        cover.addEventListener("load", onCoverLoaded);
+        this.cover.addEventListener("load", onCoverLoaded);
       }
     }
 
-    title.textContent = Context.data?.title;
-    description.textContent = Context.data?.description || "No description.";
+    this.title.textContent = Context.data?.title;
+    this.description.textContent = Context.data?.description || "No description.";
 
     {
       let fragment: DocumentFragment;
@@ -144,15 +142,15 @@ class View {
         });
       }
 
-      const list = artists.querySelector("ul");
+      const list = this.artists.querySelector("ul");
       while (list.firstChild) {
         list.lastChild.remove();
       }
 
       if (fragment) {
         list.appendChild(fragment);
-        metadata.insertBefore(artists, metadata.firstElementChild);
-      } else artists.remove();
+        this.metadata.insertBefore(this.artists, this.metadata.firstElementChild);
+      } else this.artists.remove();
     }
     {
       let fragment: DocumentFragment;
@@ -165,15 +163,15 @@ class View {
         });
       }
 
-      const list = authors.querySelector("ul");
+      const list = this.authors.querySelector("ul");
       while (list.firstChild) {
         list.lastChild.remove();
       }
 
       if (fragment) {
         list.appendChild(fragment);
-        metadata.insertBefore(authors, artists.nextElementSibling);
-      } else authors.remove();
+        this.metadata.insertBefore(this.authors, this.artists.nextElementSibling);
+      } else this.authors.remove();
     }
     {
       let fragment: DocumentFragment;
@@ -187,31 +185,29 @@ class View {
         });
       }
 
-      const list = genres.querySelector("ul");
+      const list = this.genres.querySelector("ul");
       while (list.firstChild) {
         list.lastChild.remove();
       }
 
       if (fragment) {
         list.appendChild(fragment);
-        metadata.insertBefore(genres, authors.nextElementSibling);
-      } else genres.remove();
+        this.metadata.insertBefore(this.genres, this.authors.nextElementSibling);
+      } else this.genres.remove();
     }
 
-    if (metadata.childElementCount) {
-      sidebar.insertBefore(metadata, cover.parentElement.nextElementSibling);
-    } else metadata.remove();
+    if (this.metadata.childElementCount) {
+      this.sidebar.insertBefore(this.metadata, this.cover.parentElement.nextElementSibling);
+    } else this.metadata.remove();
   }
 
   updateChapters() {
-    const { body, description, chapters } = this;
-
     let fragment: DocumentFragment;
     if (Context.data?.chapters?.length) {
       fragment = document.createDocumentFragment();
       Context.data.chapters.forEach(chapter => {
         const item = document.createElement("li");
-        const anchor = DOM.createAnchor(chapter.path);
+        const anchor = createAnchor(chapter.path);
         item.classList.add("chapter");
 
         const name = document.createElement("h3");
@@ -239,7 +235,7 @@ class View {
       });
     }
 
-    const list = chapters.querySelector("ul");
+    const list = this.chapters.querySelector("ul");
     while (list.firstChild) {
       list.lastChild.remove();
     }
@@ -255,16 +251,14 @@ class View {
     count.classList.add("count");
     if (Context.data?.chapters?.length) {
       count.textContent = ` (${Context.data.chapters.length})`;
-      chapters.querySelector("h2").appendChild(count);
+      this.chapters.querySelector("h2").appendChild(count);
     } else count.remove();
 
-    body.insertBefore(chapters, description.nextElementSibling);
+    this.body.insertBefore(this.chapters, this.description.nextElementSibling);
   }
 }
 
 const render = async () => {
-  DOM.clear();
-
   const state = Router.getState<Manga>();
   if (state.data) {
     Object.assign(Context, { data: state.data });
@@ -290,4 +284,8 @@ const render = async () => {
 
 const destroy = () => {};
 
-export default { ignoreStates, render, destroy };
+export default defineComponent({
+  ignoreStates,
+  render,
+  destroy
+});

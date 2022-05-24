@@ -1,5 +1,5 @@
 import { sendRequest } from "../../App";
-import DOM from "../../DOM";
+import DOM, { defineComponent } from "../../DOM";
 import Router from "../../Router";
 import Entry from "../Entry";
 import { WithLoader } from "../Loader";
@@ -59,17 +59,32 @@ const create = async () => {
     const fragment = document.createDocumentFragment();
     data?.forEach(e => fragment.appendChild(Entry(Context.currentExtension.id, e)));
 
+    container.appendChild(fragment);
     if (hasNext) {
-      const lastIdx = Math.max(0, Math.floor(data.length / 2) - 1);
-      const observer = new IntersectionObserver(entries => {
+      const observers: IntersectionObserver[] = [];
+      const observerFn = (entries: IntersectionObserverEntry[]) => {
         if (entries[0].isIntersecting) {
-          observer.disconnect();
+          observers.forEach(observer => observer.disconnect());
           WithLoader(() => paginate(currentPage + 1), loaderOptions);
         }
-      });
-      observer.observe(fragment.children[lastIdx]);
+      };
+
+      const lastIdx = container.childElementCount - 1;
+      const targetIdx = Math.min(
+        lastIdx,
+        Math.max(0, container.childElementCount - Math.floor(Context.data.entries.length / 2))
+      );
+
+      if (targetIdx !== lastIdx) {
+        const observer = new IntersectionObserver(observerFn);
+        observer.observe(container.children[targetIdx]);
+        observers.push(observer);
+      }
+
+      const observer = new IntersectionObserver(observerFn);
+      observer.observe(container.children[lastIdx]);
+      observers.push(observer);
     }
-    container.appendChild(fragment);
   };
 
   if (Context.data && Context.entries?.length) {
@@ -107,8 +122,6 @@ const create = async () => {
 };
 
 const render = async () => {
-  DOM.clear();
-
   const state = Router.getState();
   if (state.lastBrowseContext) {
     Object.assign(Context, state.lastBrowseContext);
@@ -175,4 +188,8 @@ const destroy = () => {
   Actions.destroy();
 };
 
-export default { ignoreStates, render, destroy };
+export default defineComponent({
+  ignoreStates,
+  render,
+  destroy
+});

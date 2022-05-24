@@ -1,4 +1,4 @@
-import DOM from "../DOM";
+import { createAnchor } from "../DOMElements";
 
 const loadImage = (url: string) =>
   new Promise((resolve, reject) => {
@@ -27,7 +27,7 @@ export default (extId: string, data: Manga) => {
   const item = document.createElement("div");
   item.classList.add("entry");
 
-  const anchor = DOM.createAnchor(`/view/${extId}${data.path}`, { data });
+  const anchor = createAnchor(`/view/${extId}${data.path}`, { data });
   anchor.title = data.title;
 
   let hideTimeout = 0;

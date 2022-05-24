@@ -1,3 +1,5 @@
+import DOM from "./DOM";
+
 type Routes = {
   [key: string]: Route;
 };
@@ -74,14 +76,16 @@ class Router {
       });
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
     window.history.pushState(state, "", path);
     window.dispatchEvent(new Event("popstate"));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   private async onChange(ev?: PopStateEvent) {
     const state = (window.history.state || ev?.state) as State;
-    if (state?.preventDefault) return;
+    if (state?.preventDefault) {
+      return;
+    }
 
     if (this.mutex.current) {
       await new Promise<void>(resolve => {
@@ -100,6 +104,7 @@ class Router {
       if (this.currentRoute?.component?.destroy) {
         this.currentRoute.component.destroy();
       }
+      DOM.clear(this.currentRoute?.component?.keepCommons);
 
       this.currentRoute = this.getCurrentRoute();
       this.setTitle();

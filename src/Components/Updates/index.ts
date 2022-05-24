@@ -1,7 +1,9 @@
-import DOM from "../../DOM";
+import { defineComponent } from "../../DOM";
 
-const render = () => {
-  DOM.clear();
-};
+const render = () => {};
+const destroy = () => {};
 
-export default { render };
+export default defineComponent({
+  render,
+  destroy
+});
