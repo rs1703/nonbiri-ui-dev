@@ -1,4 +1,5 @@
 interface Component {
+  mounted: { current: boolean };
   keepCommons?: boolean;
   ignoreStates?: string[];
   create?(): HTMLElement;

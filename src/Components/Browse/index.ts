@@ -9,6 +9,7 @@ import { Extensions, Sources } from "./list";
 
 const ignoreFields = ["q", "id"];
 const ignoreStates = ["lastBrowseContext"];
+const mounted = { current: false };
 
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
@@ -20,8 +21,6 @@ const loaderOptions = {
 };
 
 const create = async () => {
-  Router.setTitle(Context.currentExtension.name);
-
   const url = new URL(window.location.origin);
   url.search = window.location.search;
   url.searchParams.set("id", Context.currentExtension.id);
@@ -40,6 +39,8 @@ const create = async () => {
       } else url.pathname = "/api/manga";
 
       Context.data = await sendRequest<ApiBrowseResponse>(url.href);
+      if (!mounted.current) return;
+
       appendEntries(Context.data.entries, Context.data.hasNext);
 
       if (Context.data.entries?.length) {
@@ -131,19 +132,26 @@ const render = async () => {
   if (!Context.extensions.size) {
     await WithLoader(async () => {
       (await sendRequest<Extension[]>("/api/extensions/index"))?.forEach(ext => Context.extensions.set(ext.id, ext));
+      if (!mounted.current) return;
       (await sendRequest<Extension[]>("/api/extensions"))?.forEach(ext => Context.installedExtensions.set(ext.id, ext));
     });
+    if (!mounted.current) return;
   }
 
   const currExtId = Router.getCurrentExtensionId();
   if (currExtId) {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
+
     if (Context.currentExtension) {
       // prettier-ignore
-      const [main, actions] = await WithLoader(async () => [
-        await create(), 
-        await Actions.create(),
-      ]);
+      const [main, actions] = await WithLoader<HTMLElement[]>(async () => {
+          const a = await create();
+          if (!mounted.current) return [];
+          return [a, await Actions.create()];
+      });
+      if (!mounted.current) return;
+
+      Router.setTitle(Context.currentExtension.name);
       container.append(main, actions);
     } else {
       console.info("Browse.index.ts Router.navigate");
@@ -190,6 +198,7 @@ const destroy = () => {
 
 export default defineComponent({
   ignoreStates,
+  mounted,
   render,
   destroy
 });

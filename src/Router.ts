@@ -101,8 +101,9 @@ class Router {
 
     this.mutex.current = true;
     try {
-      if (this.currentRoute?.component?.destroy) {
-        this.currentRoute.component.destroy();
+      if (this.currentRoute?.component) {
+        this.currentRoute.component.mounted.current = false;
+        this.currentRoute.component?.destroy();
       }
       DOM.clear(this.currentRoute?.component?.keepCommons);
 
@@ -120,6 +121,7 @@ class Router {
         } else {
           window.history.replaceState({}, "", this.getCurrentPath());
         }
+        this.currentRoute.component.mounted.current = true;
         this.currentRoute.component.render();
       }
     } finally {

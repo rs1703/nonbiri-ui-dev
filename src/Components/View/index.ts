@@ -7,6 +7,7 @@ import { WithLoader } from "../Loader";
 import Context from "./Context";
 
 const ignoreStates = ["data", ...Browse.ignoreStates];
+const mounted = { current: false };
 
 const buildUrl = (pathname: string) => {
   const url = new URL(window.location.origin);
@@ -19,6 +20,7 @@ const buildUrl = (pathname: string) => {
 };
 
 class View {
+  extId: string;
   banner: HTMLDivElement;
 
   sidebar: HTMLElement;
@@ -35,6 +37,7 @@ class View {
   chapters: HTMLDivElement;
 
   constructor() {
+    this.extId = Router.getCurrentExtensionId();
     this.banner = document.createElement("div");
     this.sidebar = document.createElement("aside");
     this.cover = document.createElement("img");
@@ -207,7 +210,7 @@ class View {
       fragment = document.createDocumentFragment();
       Context.data.chapters.forEach(chapter => {
         const item = document.createElement("li");
-        const anchor = createAnchor(chapter.path);
+        const anchor = createAnchor(`/read/${this.extId}${chapter.path}`);
         item.classList.add("chapter");
 
         const name = document.createElement("h3");
@@ -262,6 +265,7 @@ const render = async () => {
   const state = Router.getState<Manga>();
   if (state.data) {
     Object.assign(Context, { data: state.data });
+    Router.setTitle(Context.data.title);
   }
 
   DOM.createContainer("view");
@@ -269,9 +273,12 @@ const render = async () => {
   await WithLoader(
     async () => {
       Context.data = await sendRequest<Manga>(buildUrl("/api/metadata"));
+      if (!mounted.current) return;
+      Router.setTitle(Context.data.title);
       view.update();
 
       Context.data.chapters = (await sendRequest<ApiChapterResponse>(buildUrl("/api/chapters")))?.entries;
+      if (!mounted.current) return;
       view.updateChapters();
     },
     {
@@ -286,6 +293,7 @@ const destroy = () => {};
 
 export default defineComponent({
   ignoreStates,
+  mounted,
   render,
   destroy
 });
