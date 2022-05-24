@@ -1,0 +1,29 @@
+.popup,
+.popup-bg {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.popup {
+  position: fixed;
+  z-index: 101;
+
+  display: flex;
+  padding: 2rem;
+}
+
+.popup-bg {
+  background-color: fade(#000, 75%);
+  position: absolute;
+}
+
+.popup-content {
+  position: relative;
+  overflow: auto;
+
+  width: 100%;
+  max-height: calc(100vh - 4rem);
+  margin: auto;
+}

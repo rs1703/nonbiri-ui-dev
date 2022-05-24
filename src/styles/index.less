@@ -1,6 +1,117 @@
 @import "fonts/noto-sans-display.less";
 @import "fonts/roboto.less";
 
+@import "variables";
+@import "reset";
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(48, 48, 48);
+  &:hover {
+    background-color: rgb(80, 80, 80);
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  font-size: 62.5%;
+}
+
+body {
+  background-color: @bg;
+  color: @text;
+
+  font-family: @ff-primary;
+  font-size: @fs;
+  line-height: @fs + (@fs * 0.25);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong {
+  color: @text-strong;
+  margin: 0;
+}
+
+a,
+button {
+  &:hover,
+  &:active,
+  &:focus-visible {
+    color: @text-strong;
+  }
+}
+
+h1 {
+  @sz: @fs + 0.4rem;
+  font-size: @sz;
+  line-height: @sz + (@sz*0.25);
+}
+
+h2 {
+  @sz: @fs + 0.2rem;
+  font-size: @sz;
+  line-height: @sz + (@sz*0.25);
+}
+
+h1,
+h2 {
+  font-weight: 600;
+}
+
+h3,
+h4,
+h5,
+h6,
+strong,
+b {
+  font-weight: 500;
+}
+
+small {
+  @sz: @fs - 0.2rem;
+  font-size: @sz;
+  line-height: @sz + (@sz*0.25);
+}
+
+a:hover,
+a:active,
+a:focus-visible,
+button:hover,
+button:active,
+button:focus-visible {
+  color: lighten(@text, 25%);
+}
+
+hr {
+  border: 0 solid @border;
+  border-top-width: 0.25rem;
+  margin: @fs 0;
+
+  &:first-child,
+  &:last-child {
+    display: none;
+  }
+}
+
+@import "header";
+@import "popup";
+@import "main";
+@import "view";
+
 .spinner {
   animation: 2s linear 0s infinite normal none running ls;
 

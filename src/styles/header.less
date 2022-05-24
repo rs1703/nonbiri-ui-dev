@@ -1,0 +1,47 @@
+@import "variables";
+
+#header {
+  transition: 0.2s ease-in-out transform, 0.2s ease-in-out background-color;
+  background-color: @bg;
+  height: @header-height;
+
+  position: sticky;
+  z-index: 100;
+  top: 0;
+
+  &.scrolled {
+    transform: translateY(-@header-height);
+  }
+}
+
+.headroom {
+  will-change: transform;
+  transition: transform 200ms linear;
+}
+
+.headroom--pinned {
+  transform: translateY(0%);
+}
+
+.headroom--unpinned {
+  transform: translateY(-100%);
+}
+
+#header .nav ul {
+  font-size: 0;
+  li {
+    display: inline-block;
+    a {
+      font-family: @ff-secondary;
+      font-size: 2.8rem;
+      font-weight: 500;
+      letter-spacing: 0.12rem;
+      text-transform: uppercase;
+      line-height: @header-height;
+
+      display: block;
+      height: @header-height;
+      padding: 0 0.8rem;
+    }
+  }
+}
