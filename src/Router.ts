@@ -108,6 +108,7 @@ class Router {
       DOM.clear(this.currentRoute?.component?.keepCommons);
 
       this.currentRoute = this.getCurrentRoute();
+      document.body.dataset.route = this.currentRoute.path;
       this.setTitle();
 
       this.onChangeHandlers.forEach(handler => handler());

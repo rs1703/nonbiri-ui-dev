@@ -40,3 +40,16 @@ export const formatGroups = (groups: string[]) => {
   const lastGroupName = groups?.pop();
   return groups?.length ? `${groups.join(", ")} & ${lastGroupName}` : lastGroupName;
 };
+
+export const loadImage = (url: string) =>
+  new Promise<void>((resolve, reject) => {
+    const image = new Image();
+    image.src = url;
+
+    if (image.complete) {
+      resolve();
+    } else {
+      image.addEventListener("load", () => resolve());
+      image.addEventListener("error", () => reject());
+    }
+  });

@@ -1,4 +1,5 @@
-import { formatGroups, formatUnix, sendRequest } from "../../App";
+import { formatGroups, formatUnix, loadImage, sendRequest } from "../../App";
+import { MangaStatusKeys } from "../../constants";
 import DOM, { defineComponent } from "../../DOM";
 import { createAnchor } from "../../DOMElements";
 import Router from "../../Router";
@@ -8,6 +9,12 @@ import Context from "./Context";
 
 const ignoreStates = ["data", ...Browse.ignoreStates];
 const mounted = { current: false };
+
+const loaderOptions = {
+  classList: ["fetching"],
+  size: 40,
+  strokeWidth: 2
+};
 
 const buildUrl = (pathname: string) => {
   const url = new URL(window.location.origin);
@@ -23,79 +30,103 @@ class View {
   extId: string;
   banner: HTMLDivElement;
 
-  sidebar: HTMLElement;
+  header: HTMLElement;
+  aside: HTMLElement;
   cover: HTMLImageElement;
   metadata: HTMLDivElement;
+  title: HTMLHeadingElement;
+  status: HTMLSpanElement;
   artists: HTMLDivElement;
   authors: HTMLDivElement;
   genres: HTMLDivElement;
-
-  body: HTMLDivElement;
-  title: HTMLHeadingElement;
   description: HTMLDivElement;
-
   chapters: HTMLDivElement;
 
   constructor() {
     this.extId = Router.getCurrentExtensionId();
     this.banner = document.createElement("div");
-    this.sidebar = document.createElement("aside");
+    this.header = document.createElement("header");
+    this.aside = document.createElement("aside");
     this.cover = document.createElement("img");
     this.metadata = document.createElement("div");
+    this.title = document.createElement("h1");
+    this.status = document.createElement("span");
     this.artists = document.createElement("div");
     this.authors = document.createElement("div");
     this.genres = document.createElement("div");
-    this.body = document.createElement("div");
-    this.title = document.createElement("h1");
     this.description = document.createElement("div");
     this.chapters = document.createElement("div");
 
     this.banner.classList.add("banner");
-    this.sidebar.classList.add("sidebar");
+    this.cover.classList.add("cover");
     this.metadata.classList.add("metadata");
+    this.title.classList.add("title");
     this.artists.classList.add("artists");
     this.authors.classList.add("authors");
     this.genres.classList.add("genres");
-    this.body.classList.add("body");
-    this.title.classList.add("title");
     this.description.classList.add("description");
     this.chapters.classList.add("chapters");
 
-    const bannerWrapper = document.createElement("div");
-    const bannerShadow = document.createElement("div");
-    bannerWrapper.classList.add("banner-wrapper");
-    bannerShadow.classList.add("shadow");
-    bannerWrapper.append(this.banner, bannerShadow);
+    const bannerWrapper = document.createElement("header");
+    {
+      const shadow = document.createElement("div");
+      shadow.classList.add("shadow");
+      bannerWrapper.append(this.banner, shadow);
+    }
 
-    const figure = document.createElement("figure");
-    figure.classList.add("cover", "loading");
-    figure.appendChild(this.cover);
+    const coverWrapper = document.createElement("figure");
+    coverWrapper.classList.add("loading");
+    coverWrapper.appendChild(this.cover);
+    this.aside.appendChild(coverWrapper);
 
     {
-      const list = document.createElement("ul");
+      const wrapper = document.createElement("div");
       const label = document.createElement("b");
+
+      wrapper.classList.add("status");
+      label.textContent = "Status";
+      [this.status.textContent] = MangaStatusKeys;
+
+      wrapper.append(label, this.status);
+    }
+    {
+      const wrapper = document.createElement("div");
+      const label = document.createElement("b");
+
+      wrapper.classList.add("artists");
       label.textContent = "Artist(s)";
-      this.artists.append(label, list);
+      wrapper.append(label, this.artists);
     }
     {
-      const list = document.createElement("ul");
+      const wrapper = document.createElement("div");
       const label = document.createElement("b");
+
+      wrapper.classList.add("authors");
       label.textContent = "Author(s)";
-      this.authors.append(label, list);
+      wrapper.append(label, this.authors);
     }
     {
-      const list = document.createElement("ul");
+      const wrapper = document.createElement("div");
       const label = document.createElement("b");
+
+      wrapper.classList.add("genres");
       label.textContent = "Genre(s)";
-      this.genres.append(label, list);
+      wrapper.append(label, this.genres);
     }
 
     this.metadata.classList.add("metadata");
-    this.metadata.append(this.artists, this.authors, this.genres);
-    this.sidebar.append(figure, this.metadata);
+    this.metadata.append(
+      this.title,
+      this.status.parentElement,
+      this.artists.parentElement,
+      this.authors.parentElement,
+      this.genres.parentElement,
+      this.description
+    );
+    this.header.append(this.aside, this.metadata);
 
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("wrapper");
+    const content = document.createElement("div");
+    content.classList.add("content");
     {
       const list = document.createElement("ul");
       const label = document.createElement("h2");
@@ -103,104 +134,100 @@ class View {
       this.chapters.append(label, list);
     }
 
-    this.body.append(this.title, this.description, this.chapters);
-    wrapper.append(this.sidebar, this.body);
+    content.append(this.header, this.chapters);
 
     this.update();
     this.updateChapters();
 
-    DOM.getContainer().append(bannerWrapper, wrapper);
+    DOM.getContainer().append(bannerWrapper, content);
   }
 
   update() {
     if (Context.data?.coverUrl && this.cover.src !== Context.data?.coverUrl) {
       this.banner.style.backgroundImage = `url(${Context.data.coverUrl})`;
       this.cover.parentElement.classList.add("loading");
-      this.cover.src = Context.data?.coverUrl;
-
-      const onCoverLoaded = () => {
+      loadImage(Context.data.coverUrl).then(() => {
         this.cover.parentElement.classList.remove("loading");
-        if (this.cover.height < this.cover.width) {
-          this.cover.parentElement.classList.add("small");
-        } else this.cover.parentElement.classList.remove("small");
-      };
-
-      if (this.cover.complete) onCoverLoaded();
-      else {
-        this.cover.addEventListener("load", onCoverLoaded);
-      }
+        this.cover.src = Context.data.coverUrl;
+      });
     }
 
     this.title.textContent = Context.data?.title;
+    this.status.textContent = MangaStatusKeys[Context.data.status || 0];
     this.description.textContent = Context.data?.description || "No description.";
 
     {
       let fragment: DocumentFragment;
       if (Context.data?.artists?.length) {
         fragment = document.createDocumentFragment();
-        Context.data.artists.forEach(artist => {
-          const item = document.createElement("li");
-          item.textContent = artist;
-          fragment.appendChild(item);
+        Context.data.artists.forEach((artist, i) => {
+          if (i) fragment.appendChild(document.createTextNode(", "));
+          const anchor = createAnchor("");
+          anchor.textContent = artist;
+          fragment.appendChild(anchor);
         });
       }
 
-      const list = this.artists.querySelector("ul");
-      while (list.firstChild) {
-        list.lastChild.remove();
+      while (this.artists.firstChild) {
+        this.artists.lastChild.remove();
       }
 
       if (fragment) {
-        list.appendChild(fragment);
-        this.metadata.insertBefore(this.artists, this.metadata.firstElementChild);
-      } else this.artists.remove();
+        this.artists.appendChild(fragment);
+        this.metadata.insertBefore(this.artists.parentElement, this.status.nextElementSibling || this.description);
+      } else this.artists.parentElement.remove();
     }
     {
       let fragment: DocumentFragment;
       if (Context.data?.authors?.length) {
         fragment = document.createDocumentFragment();
-        Context.data.authors.forEach(author => {
-          const item = document.createElement("li");
-          item.textContent = author;
-          fragment.appendChild(item);
+        Context.data.authors.forEach((author, i) => {
+          if (i) fragment.appendChild(document.createTextNode(", "));
+          const anchor = createAnchor("");
+          anchor.textContent = author;
+          fragment.appendChild(anchor);
         });
       }
 
-      const list = this.authors.querySelector("ul");
-      while (list.firstChild) {
-        list.lastChild.remove();
+      while (this.authors.firstChild) {
+        this.authors.lastChild.remove();
       }
 
       if (fragment) {
-        list.appendChild(fragment);
-        this.metadata.insertBefore(this.authors, this.artists.nextElementSibling);
-      } else this.authors.remove();
+        this.authors.appendChild(fragment);
+        this.metadata.insertBefore(
+          this.authors.parentElement,
+          this.artists.parentElement.nextElementSibling || this.description
+        );
+      } else this.authors.parentElement.remove();
     }
     {
       let fragment: DocumentFragment;
       if (Context.data?.genres?.length) {
         fragment = document.createDocumentFragment();
-        Context.data.genres.forEach(genre => {
-          const item = document.createElement("li");
-          item.classList.add("genre");
-          item.textContent = genre;
-          fragment.appendChild(item);
+        Context.data.genres.forEach((genre, i) => {
+          if (i) fragment.appendChild(document.createTextNode(", "));
+          const anchor = createAnchor("");
+          anchor.textContent = genre;
+          fragment.appendChild(anchor);
         });
       }
 
-      const list = this.genres.querySelector("ul");
-      while (list.firstChild) {
-        list.lastChild.remove();
+      while (this.genres.firstChild) {
+        this.genres.lastChild.remove();
       }
 
       if (fragment) {
-        list.appendChild(fragment);
-        this.metadata.insertBefore(this.genres, this.authors.nextElementSibling);
-      } else this.genres.remove();
+        this.genres.appendChild(fragment);
+        this.metadata.insertBefore(
+          this.genres.parentElement,
+          this.authors.parentElement.nextElementSibling || this.description
+        );
+      } else this.genres.parentElement.remove();
     }
 
     if (this.metadata.childElementCount) {
-      this.sidebar.insertBefore(this.metadata, this.cover.parentElement.nextElementSibling);
+      this.header.insertBefore(this.metadata, this.cover.parentElement.nextElementSibling);
     } else this.metadata.remove();
   }
 
@@ -256,37 +283,45 @@ class View {
       count.textContent = ` (${Context.data.chapters.length})`;
       this.chapters.querySelector("h2").appendChild(count);
     } else count.remove();
-
-    this.body.insertBefore(this.chapters, this.description.nextElementSibling);
   }
 }
 
 const render = async () => {
+  DOM.createContainer("view");
+
   const state = Router.getState<Manga>();
   if (state.data) {
     Object.assign(Context, { data: state.data });
     Router.setTitle(Context.data.title);
-  }
 
-  DOM.createContainer("view");
-  const view = new View();
-  await WithLoader(
-    async () => {
+    const view = new View();
+    await WithLoader(async () => {
       Context.data = await sendRequest<Manga>(buildUrl("/api/metadata"));
       if (!mounted.current) return;
+
       Router.setTitle(Context.data.title);
       view.update();
 
       Context.data.chapters = (await sendRequest<ApiChapterResponse>(buildUrl("/api/chapters")))?.entries;
       if (!mounted.current) return;
       view.updateChapters();
-    },
-    {
-      classList: ["fetching"],
-      size: 40,
-      strokeWidth: 2
-    }
-  );
+    }, loaderOptions);
+  } else {
+    await WithLoader(async () => {
+      Context.data = await sendRequest<Manga>(buildUrl("/api/metadata"));
+    });
+
+    Router.setTitle(Context.data.title);
+    const view = new View();
+    view.update();
+
+    Context.data.chapters = (
+      await WithLoader(() => sendRequest<ApiChapterResponse>(buildUrl("/api/chapters")), loaderOptions)
+    )?.entries;
+
+    if (!mounted.current) return;
+    view.updateChapters();
+  }
 };
 
 const destroy = () => {};

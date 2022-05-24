@@ -143,15 +143,15 @@ const render = async () => {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
 
     if (Context.currentExtension) {
+      Router.setTitle(Context.currentExtension.name);
+
       // prettier-ignore
       const [main, actions] = await WithLoader<HTMLElement[]>(async () => {
-          const a = await create();
-          if (!mounted.current) return [];
-          return [a, await Actions.create()];
+        const m = await create();
+        if (!mounted.current) return [];
+        return [m, await Actions.create()];
       });
       if (!mounted.current) return;
-
-      Router.setTitle(Context.currentExtension.name);
       container.append(main, actions);
     } else {
       console.info("Browse.index.ts Router.navigate");
