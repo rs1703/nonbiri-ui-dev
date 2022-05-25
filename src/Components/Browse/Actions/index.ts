@@ -8,7 +8,7 @@ import SearchForm from "./SearchForm";
 
 const create = async () => {
   if (!Context.filters?.size) {
-    await sendRequest<Filter[]>(`/api/extensions/filters?id=${Context.currentExtension.id}`).then(
+    await sendRequest<Filter[]>(`/api/extensions/filters?sourceId=${Context.currentExtension.id}`).then(
       filters => (Context.filters = new Set(filters))
     );
   }

@@ -20,8 +20,8 @@ const buildUrl = (pathname: string) => {
   const url = new URL(window.location.origin);
   url.pathname = pathname;
 
-  url.searchParams.set("id", Router.getCurrentExtensionId());
-  url.searchParams.set("path", window.location.pathname.split("/").slice(3).join("/"));
+  url.searchParams.set("sourceId", Router.getCurrentExtensionId());
+  url.searchParams.set("path", `/${window.location.pathname.split("/").slice(3).join("/")}`);
 
   return url.href;
 };
@@ -126,10 +126,9 @@ const updateChapters = () => {
   let fragment: DocumentFragment;
   if (Context.data?.chapters?.length) {
     fragment = document.createDocumentFragment();
-    const extensionId = Router.getCurrentExtensionId();
     Context.data.chapters.forEach(chapter => {
       const item = document.createElement("li");
-      const anchor = createAnchor(`/read/${extensionId}${chapter.path}`);
+      const anchor = createAnchor(`/read/${chapter.sourceId}${chapter.path}`);
       item.classList.add("chapter");
 
       const name = document.createElement("h3");

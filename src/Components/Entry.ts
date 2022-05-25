@@ -19,7 +19,7 @@ const loadImage = (url: string) =>
     exec();
   });
 
-export default (extId: string, data: Manga) => {
+export default (data: Manga) => {
   if (!data.path.startsWith("/")) {
     data.path = `/${data.path}`;
   }
@@ -27,7 +27,7 @@ export default (extId: string, data: Manga) => {
   const item = document.createElement("div");
   item.classList.add("entry");
 
-  const anchor = createAnchor(`/view/${extId}${data.path}`, { data });
+  const anchor = createAnchor(`/view/${data.sourceId}${data.path}`, { data });
   anchor.title = data.title;
 
   let hideTimeout = 0;

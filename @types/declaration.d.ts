@@ -1,4 +1,4 @@
-import { MangaStatus } from "../src/constants";
+import { MangaStatus, ReadingStatus } from "../src/constants";
 
 declare global {
   interface Component {
@@ -23,18 +23,40 @@ declare global {
   }
 
   interface Chapter {
+    id?: number;
+    mangaId?: string;
+    sourceId: string;
+    addedAt?: number;
+    updatedAt?: number;
+    publishedAt: number;
+    downloadedAt?: number;
+    lastReadAt?: number;
+    lastReadPage?: number;
+    readCount?: number;
     path: string;
     name: string;
-    publishedAt: number;
+    pages?: string[];
+    pageCount?: number;
+    isDownloaded?: boolean;
+
     groups?: string[];
   }
 
   interface Manga {
+    id?: number;
+    sourceId: string;
+    addedAt?: number;
+    updatedAt?: number;
+    lastReadAt?: number;
+    lastViewedAt?: number;
     path: string;
     coverUrl: string;
+    customCoverUrl?: string;
+    bannerUrl?: string;
     title: string;
     description?: string;
     status?: MangaStatus;
+    readingStatus?: ReadingStatus;
     artists?: string[];
     authors?: string[];
     genres?: string[];
@@ -49,7 +71,6 @@ declare global {
   }
 
   interface ApiBrowseResponse {
-    id: string;
     page: number;
     hasNext: boolean;
     entries: Manga[];
@@ -57,7 +78,6 @@ declare global {
   }
 
   interface ApiChapterResponse {
-    id: string;
     entries: Chapter[];
     execDuration: string;
   }

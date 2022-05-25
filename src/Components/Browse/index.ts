@@ -23,7 +23,7 @@ const loaderOptions = {
 const create = async () => {
   const url = new URL(window.location.origin);
   url.search = window.location.search;
-  url.searchParams.set("id", Context.currentExtension.id);
+  url.searchParams.set("sourceId", Context.currentExtension.id);
 
   const container = document.createElement("div");
   container.classList.add("entries");
@@ -58,7 +58,7 @@ const create = async () => {
     if (!data?.length) return;
 
     const fragment = document.createDocumentFragment();
-    data?.forEach(e => fragment.appendChild(Entry(Context.currentExtension.id, e)));
+    data?.forEach(e => fragment.appendChild(Entry(e)));
 
     container.appendChild(fragment);
     if (hasNext) {
