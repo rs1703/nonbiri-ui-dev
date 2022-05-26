@@ -38,7 +38,7 @@ class Router {
   }
 
   getState<T>() {
-    return window.history.state as State<T>;
+    return (window.history.state || {}) as State<T>;
   }
 
   setTitle(text?: string) {
@@ -66,14 +66,6 @@ class Router {
     const currentPath = this.getCurrentPath();
     if (currentPath === path) {
       return;
-    }
-
-    if (window.history.state) {
-      Object.keys(window.history.state).forEach(key => {
-        if (key.startsWith("last")) {
-          state[key] = window.history.state[key];
-        }
-      });
     }
 
     window.history.pushState(state, "", path);
@@ -113,15 +105,6 @@ class Router {
 
       this.onChangeHandlers.forEach(handler => handler());
       if (this.currentRoute?.component?.render) {
-        if (state && this.currentRoute.component.ignoreStates) {
-          Object.keys(state).forEach(key => {
-            if (!this.currentRoute.component.ignoreStates.includes(key)) {
-              delete window.history.state[key];
-            }
-          });
-        } else {
-          window.history.replaceState({}, "", this.getCurrentPath());
-        }
         this.currentRoute.component.mounted.current = true;
         this.currentRoute.component.render();
       }

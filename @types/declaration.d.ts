@@ -4,7 +4,6 @@ declare global {
   interface Component {
     mounted: { current: boolean };
     keepCommons?: boolean;
-    ignoreStates?: string[];
     create?(): HTMLElement;
     destroy(): void;
     render?(): Promise<void> | void;
@@ -57,6 +56,7 @@ declare global {
     description?: string;
     status?: MangaStatus;
     readingStatus?: ReadingStatus;
+    inLibrary?: boolean;
     artists?: string[];
     authors?: string[];
     genres?: string[];

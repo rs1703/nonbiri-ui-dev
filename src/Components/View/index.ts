@@ -3,11 +3,9 @@ import { MangaStatusKeys } from "../../constants";
 import DOM, { defineComponent } from "../../DOM";
 import { createAnchor } from "../../DOMElements";
 import Router from "../../Router";
-import Browse from "../Browse";
 import { WithLoader } from "../Loader";
 import Context from "./Context";
 
-const ignoreStates = ["data", ...Browse.ignoreStates];
 const mounted = { current: false };
 
 const loaderOptions = {
@@ -315,7 +313,6 @@ const render = async () => {
 const destroy = () => {};
 
 export default defineComponent({
-  ignoreStates,
   mounted,
   render,
   destroy

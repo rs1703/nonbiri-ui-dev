@@ -7,8 +7,7 @@ import Actions from "./Actions";
 import Context, { id } from "./Context";
 import { Extensions, Sources } from "./list";
 
-const ignoreFields = ["q", "id"];
-const ignoreStates = ["lastBrowseContext"];
+const ignoreFields = ["q", "sourceId"];
 const mounted = { current: false };
 
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
@@ -32,26 +31,22 @@ const create = async () => {
   let currentPage: number = Context.data?.page || 1;
 
   const paginate = async (page: number) => {
-    try {
-      url.searchParams.set("page", page.toString());
-      if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
-        url.pathname = "/api/search";
-      } else url.pathname = "/api/manga";
+    url.searchParams.set("page", page.toString());
+    if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
+      url.pathname = "/api/search";
+    } else url.pathname = "/api/manga";
 
-      Context.data = await sendRequest<ApiBrowseResponse>(url.href);
-      if (!mounted.current) return;
+    Context.data = await sendRequest<ApiBrowseResponse>(url.href);
+    if (!mounted.current) return;
 
-      appendEntries(Context.data.entries, Context.data.hasNext);
-
-      if (Context.data.entries?.length) {
-        Context.entries.push(...Context.data.entries);
-      }
-
-      window.dispatchEvent(new Event("pagination"));
-      Router.setState({ lastBrowseContext: Context });
-    } finally {
-      currentPage = page;
+    appendEntries(Context.data.entries, Context.data.hasNext);
+    if (Context.data.entries?.length) {
+      Context.entries.push(...Context.data.entries);
     }
+
+    currentPage = page;
+    window.dispatchEvent(new Event("pagination"));
+    Router.setState({ lastBrowseContext: Context });
   };
 
   appendEntries = (data: Manga[], hasNext: boolean) => {
@@ -62,29 +57,31 @@ const create = async () => {
 
     container.appendChild(fragment);
     if (hasNext) {
-      const observers: IntersectionObserver[] = [];
-      const observerFn = (entries: IntersectionObserverEntry[]) => {
-        if (entries[0].isIntersecting) {
-          observers.forEach(observer => observer.disconnect());
-          WithLoader(() => paginate(currentPage + 1), loaderOptions);
+      setTimeout(() => {
+        const observers: IntersectionObserver[] = [];
+        const observerFn = (entries: IntersectionObserverEntry[]) => {
+          if (entries[0].isIntersecting) {
+            observers.forEach(observer => observer.disconnect());
+            WithLoader(() => paginate(currentPage + 1), loaderOptions);
+          }
+        };
+
+        const lastIdx = container.childElementCount - 1;
+        const targetIdx = Math.min(
+          lastIdx,
+          Math.max(0, container.childElementCount - Math.floor(Context.data.entries.length / 2))
+        );
+
+        if (targetIdx !== lastIdx) {
+          const observer = new IntersectionObserver(observerFn);
+          observer.observe(container.children[targetIdx]);
+          observers.push(observer);
         }
-      };
 
-      const lastIdx = container.childElementCount - 1;
-      const targetIdx = Math.min(
-        lastIdx,
-        Math.max(0, container.childElementCount - Math.floor(Context.data.entries.length / 2))
-      );
-
-      if (targetIdx !== lastIdx) {
         const observer = new IntersectionObserver(observerFn);
-        observer.observe(container.children[targetIdx]);
+        observer.observe(container.children[lastIdx]);
         observers.push(observer);
-      }
-
-      const observer = new IntersectionObserver(observerFn);
-      observer.observe(container.children[lastIdx]);
-      observers.push(observer);
+      }, 0);
     }
   };
 
@@ -184,6 +181,8 @@ const render = async () => {
 const destroy = () => {
   Context.currentExtension = undefined;
   Context.filters = undefined;
+  Context.data = undefined;
+  Context.entries = [];
 
   if (searchParamsChangeEventListener) {
     window.removeEventListener("popstate", searchParamsChangeEventListener);
@@ -197,7 +196,6 @@ const destroy = () => {
 };
 
 export default defineComponent({
-  ignoreStates,
   mounted,
   render,
   destroy
