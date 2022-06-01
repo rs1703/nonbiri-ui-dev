@@ -17,13 +17,22 @@ const setReadState = async (data: Manga, state: ReadingStatus, mountedRef: Ref<b
   }
 };
 
+interface Entry extends HTMLDivElement {
+  addReadStateListener: (fn: () => void) => void;
+  removeReadStateListener: (fn: () => void) => void;
+}
+
 export default (data: Manga, mountedRef: Ref<boolean>) => {
   if (!data.path.startsWith("/")) {
     data.path = `/${data.path}`;
   }
 
-  const item = document.createElement("div");
+  const item = document.createElement("div") as Entry;
   item.classList.add("entry");
+
+  const readStateListeners = new Set<() => void>();
+  item.addReadStateListener = (fn: () => void) => readStateListeners.add(fn);
+  item.removeReadStateListener = (fn: () => void) => readStateListeners.delete(fn);
 
   const updateFollowStateAttr = () => {
     if (data.readingStatus > 0) {
@@ -88,15 +97,18 @@ export default (data: Manga, mountedRef: Ref<boolean>) => {
       ev.preventDefault();
       ev.stopPropagation();
       ev.stopImmediatePropagation();
+
       if (mutexRef.current) {
         return;
       }
       mutexRef.current = true;
+
       try {
         await setReadState(data, data.readingStatus > 0 ? ReadingStatus.None : ReadingStatus.Reading, mountedRef);
         if (mountedRef.current) {
           updateFollowStateAttr();
           action.textContent = data.readingStatus > 0 ? addedText : removedText;
+          readStateListeners.forEach(fn => fn());
         }
       } finally {
         mutexRef.current = false;

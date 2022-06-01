@@ -55,7 +55,13 @@ const create = async () => {
     if (!data?.length) return;
 
     const fragment = document.createDocumentFragment();
-    data?.forEach(e => fragment.appendChild(Entry(e, MountedRef)));
+    data?.forEach(e => {
+      const entry = Entry(e, MountedRef);
+      entry.addReadStateListener(() => {
+        Router.setState({ lastBrowseContext: Context });
+      });
+      fragment.appendChild(entry);
+    });
 
     container.appendChild(fragment);
     if (hasNext) {

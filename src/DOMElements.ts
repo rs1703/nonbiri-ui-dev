@@ -1,10 +1,10 @@
 import Router from "./Router";
 
 interface Anchor extends HTMLAnchorElement {
-  addClickPreHook: (fn: (preventDefaultRef?: Ref<boolean>) => void) => void;
-  addClickPostHook: (fn: () => void) => void;
-  removeClickPreHook: (fn: (preventDefaultRef?: Ref<boolean>) => void) => void;
-  removeClickPostHook: (fn: () => void) => void;
+  addPreClickListener: (fn: (preventDefaultRef?: Ref<boolean>) => void) => void;
+  removePreClickListener: (fn: (preventDefaultRef?: Ref<boolean>) => void) => void;
+  addClickPostClickListener: (fn: () => void) => void;
+  removePostClickListener: (fn: () => void) => void;
 }
 
 export const CreateAnchor = <T>(href: string, state: State<T> = {}) => {
@@ -12,12 +12,12 @@ export const CreateAnchor = <T>(href: string, state: State<T> = {}) => {
   anchor.href = href;
 
   const preHooks = new Set<() => void>();
-  anchor.addClickPreHook = fn => preHooks.add(fn);
-  anchor.removeClickPreHook = fn => preHooks.delete(fn);
+  anchor.addPreClickListener = fn => preHooks.add(fn);
+  anchor.removePreClickListener = fn => preHooks.delete(fn);
 
   const postHooks = new Set<() => void>();
-  anchor.addClickPostHook = fn => postHooks.add(fn);
-  anchor.removeClickPostHook = fn => postHooks.delete(fn);
+  anchor.addClickPostClickListener = fn => postHooks.add(fn);
+  anchor.removePostClickListener = fn => postHooks.delete(fn);
 
   anchor.addEventListener("click", ev => {
     if (ev.ctrlKey || ev.shiftKey || ev.metaKey) {
