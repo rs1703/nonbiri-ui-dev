@@ -1,14 +1,13 @@
-import { sendRequest } from "../../App";
-import DOM, { defineComponent } from "../../DOM";
+import { SendRequest } from "../../App";
+import DOM, { DefineComponent } from "../../DOM";
 import Router from "../../Router";
 import Entry from "../Entry";
 import { WithLoader } from "../Loader";
 import Actions from "./Actions";
-import Context, { id } from "./Context";
-import { Extensions, Sources } from "./list";
+import Context, { ID, MountedRef } from "./Context";
+import List from "./List";
 
-const ignoreFields = ["q", "sourceId"];
-const mounted = { current: false };
+const ignoreFields = ["q", "sourceId", "page"];
 
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
@@ -36,13 +35,16 @@ const create = async () => {
       url.pathname = "/api/search";
     } else url.pathname = "/api/manga";
 
-    Context.data = await sendRequest<ApiBrowseResponse>(url.href);
-    if (!mounted.current) return;
+    const { content } = await SendRequest<ApiBrowse>(url.href);
+    if (!MountedRef.current) {
+      return;
+    }
 
-    appendEntries(Context.data.entries, Context.data.hasNext);
+    if (content) Context.data = content;
     if (Context.data.entries?.length) {
       Context.entries.push(...Context.data.entries);
     }
+    appendEntries(Context.data.entries, Context.data.hasNext);
 
     currentPage = page;
     window.dispatchEvent(new Event("pagination"));
@@ -53,7 +55,7 @@ const create = async () => {
     if (!data?.length) return;
 
     const fragment = document.createDocumentFragment();
-    data?.forEach(e => fragment.appendChild(Entry(e)));
+    data?.forEach(e => fragment.appendChild(Entry(e, MountedRef)));
 
     container.appendChild(fragment);
     if (hasNext) {
@@ -87,7 +89,12 @@ const create = async () => {
 
   if (Context.data && Context.entries?.length) {
     appendEntries(Context.entries, Context.data.hasNext);
-  } else await paginate(currentPage);
+  } else {
+    await paginate(currentPage);
+    if (!MountedRef.current) {
+      return undefined;
+    }
+  }
 
   searchParamsChangeEventListener = async () => {
     if (window.location.search !== url.search) {
@@ -96,7 +103,7 @@ const create = async () => {
       }
 
       url.search = window.location.search;
-      url.searchParams.set("id", Context.currentExtension.id);
+      url.searchParams.set("sourceId", Context.currentExtension.id);
 
       Context.data = undefined;
       Context.entries = [];
@@ -128,54 +135,66 @@ const render = async () => {
   const container = DOM.createContainer("browse");
   if (!Context.extensions.size) {
     await WithLoader(async () => {
-      (await sendRequest<Extension[]>("/api/extensions/index"))?.forEach(ext => Context.extensions.set(ext.id, ext));
-      if (!mounted.current) return;
-      (await sendRequest<Extension[]>("/api/extensions"))?.forEach(ext => Context.installedExtensions.set(ext.id, ext));
+      {
+        const { content } = await SendRequest<Extension[]>("/api/extensions/index");
+        if (!MountedRef.current) {
+          return;
+        }
+        if (content) content.forEach(ext => Context.extensions.set(ext.id, ext));
+      }
+
+      const { content } = await SendRequest<Extension[]>("/api/extensions");
+      if (MountedRef.current && content?.length) {
+        content.forEach(ext => Context.installedExtensions.set(ext.id, ext));
+      }
     });
-    if (!mounted.current) return;
+    if (!MountedRef.current) return;
   }
 
   const currExtId = Router.getCurrentExtensionId();
   if (currExtId) {
     Context.currentExtension = Context.installedExtensions.get(currExtId);
-
     if (Context.currentExtension) {
       Router.setTitle(Context.currentExtension.name);
 
       // prettier-ignore
       const [main, actions] = await WithLoader<HTMLElement[]>(async () => {
         const m = await create();
-        if (!mounted.current) return [];
+        if (!MountedRef.current) return [];
         return [m, await Actions.create()];
       });
-      if (!mounted.current) return;
-      container.append(main, actions);
-    } else {
-      console.info("Browse.index.ts Router.navigate");
-      Router.navigate("/browse");
+
+      if (MountedRef.current) {
+        container.append(main, actions);
+      }
+      return;
     }
-  } else {
-    const header = document.createElement("header");
-    header.classList.add(id);
 
-    const leftBtn = document.createElement("button");
-    leftBtn.textContent = "Sources";
-    leftBtn.addEventListener("click", ev => {
-      ev.preventDefault();
-      Sources();
-    });
-
-    const rightBtn = document.createElement("button");
-    rightBtn.textContent = "Extensions";
-    rightBtn.addEventListener("click", ev => {
-      ev.preventDefault();
-      Extensions();
-    });
-
-    header.append(leftBtn, rightBtn);
-    container.appendChild(header);
-    Sources();
+    console.info("Browse.index.ts Router.navigate");
+    Router.navigate("/browse");
+    return;
   }
+
+  const header = document.createElement("header");
+  header.classList.add(ID);
+
+  const leftBtn = document.createElement("button");
+  leftBtn.textContent = "Sources";
+  leftBtn.addEventListener("click", ev => {
+    ev.preventDefault();
+    List.sources();
+  });
+
+  const rightBtn = document.createElement("button");
+  rightBtn.textContent = "Extensions";
+  rightBtn.addEventListener("click", ev => {
+    ev.preventDefault();
+    List.extensions();
+  });
+
+  header.append(leftBtn, rightBtn);
+  container.appendChild(header);
+  List.sources();
 };
 
 const destroy = () => {
@@ -195,8 +214,8 @@ const destroy = () => {
   Actions.destroy();
 };
 
-export default defineComponent({
-  mounted,
+export default DefineComponent({
+  mountedRef: MountedRef,
   render,
   destroy
 });

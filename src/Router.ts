@@ -7,7 +7,7 @@ type Routes = {
 class Router {
   private title: string;
   private routes: Routes;
-  private mutex = { current: false };
+  private mutexRef = { current: false };
 
   private initialized = false;
   private currentRoute: Route;
@@ -79,11 +79,11 @@ class Router {
       return;
     }
 
-    if (this.mutex.current) {
+    if (this.mutexRef.current) {
       await new Promise<void>(resolve => {
         const interval = setInterval(() => {
           requestAnimationFrame(() => {
-            if (this.mutex.current) return;
+            if (this.mutexRef.current) return;
             clearInterval(interval);
             resolve();
           });
@@ -91,10 +91,10 @@ class Router {
       });
     }
 
-    this.mutex.current = true;
+    this.mutexRef.current = true;
     try {
       if (this.currentRoute?.component) {
-        this.currentRoute.component.mounted.current = false;
+        this.currentRoute.component.mountedRef.current = false;
         this.currentRoute.component?.destroy();
       }
       DOM.clear(this.currentRoute?.component?.keepCommons);
@@ -105,11 +105,11 @@ class Router {
 
       this.onChangeHandlers.forEach(handler => handler());
       if (this.currentRoute?.component?.render) {
-        this.currentRoute.component.mounted.current = true;
+        this.currentRoute.component.mountedRef.current = true;
         this.currentRoute.component.render();
       }
     } finally {
-      this.mutex.current = false;
+      this.mutexRef.current = false;
     }
   }
 }

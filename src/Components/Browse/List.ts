@@ -1,6 +1,6 @@
 import DOM from "../../DOM";
 import Router from "../../Router";
-import Context, { id } from "./Context";
+import Context, { ID } from "./Context";
 
 const createExtItem = (ext: Extension) => {
   const item = document.createElement("li");
@@ -36,7 +36,7 @@ const attachSourceOnClick = (ext: Extension, btn: HTMLButtonElement) => {
   });
 };
 
-const Sources = () => {
+const sources = () => {
   const container = DOM.getContainer();
   if (!container || container.lastElementChild?.classList.contains("sources")) {
     return;
@@ -60,7 +60,7 @@ const Sources = () => {
   } else {
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i];
-      if (!child.classList.contains(id)) {
+      if (!child.classList.contains(ID)) {
         child.remove();
       }
     }
@@ -128,7 +128,7 @@ const attachExtensionOnClick = (ext: Extension, button: HTMLButtonElement) => {
   });
 };
 
-const Extensions = () => {
+const extensions = () => {
   const container = DOM.getContainer();
   if (!container || container.lastElementChild?.classList.contains("index")) {
     return;
@@ -169,7 +169,7 @@ const Extensions = () => {
   } else {
     for (let i = 0; i < container.children.length; i++) {
       const child = container.children[i];
-      if (!child.classList.contains(id)) {
+      if (!child.classList.contains(ID)) {
         child.remove();
       }
     }
@@ -177,4 +177,7 @@ const Extensions = () => {
   }
 };
 
-export { Sources, Extensions };
+export default {
+  sources,
+  extensions
+};

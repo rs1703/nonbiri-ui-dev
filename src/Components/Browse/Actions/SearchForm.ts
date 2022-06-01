@@ -1,5 +1,5 @@
 import Router from "../../../Router";
-import { SearchIcon } from "../../Icons";
+import Icons from "../../Icons";
 
 const sync = () => {
   const q = new URLSearchParams(window.location.search).get("q") || "";
@@ -24,7 +24,7 @@ const create = () => {
   const submit = document.createElement("button");
   submit.classList.add("search-btn");
   submit.type = "submit";
-  submit.appendChild(SearchIcon({ size: 20, strokeWidth: 3 }));
+  submit.appendChild(Icons.search({ size: 20, strokeWidth: 3 }));
 
   form.addEventListener("submit", ev => {
     ev.preventDefault();

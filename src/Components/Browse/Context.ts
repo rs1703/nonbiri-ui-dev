@@ -1,6 +1,7 @@
-import { generateUniqueString } from "../../App";
+import { GenerateUniqueString } from "../../App";
 
-export const id = generateUniqueString();
+export const ID = GenerateUniqueString();
+export const MountedRef = { current: false };
 export default {
   extensions: new Map<string, Extension>(),
   installedExtensions: new Map<string, Extension>(),

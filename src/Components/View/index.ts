@@ -1,12 +1,10 @@
-import { formatGroups, formatUnix, loadImage, sendRequest } from "../../App";
+import { FormatGroups, FormatUnix, LoadImage, SendRequest } from "../../App";
 import { MangaStatusKeys } from "../../constants";
-import DOM, { defineComponent } from "../../DOM";
-import { createAnchor } from "../../DOMElements";
+import DOM, { DefineComponent } from "../../DOM";
+import { CreateAnchor } from "../../DOMElements";
 import Router from "../../Router";
 import { WithLoader } from "../Loader";
-import Context from "./Context";
-
-const mounted = { current: false };
+import Context, { MountedRef } from "./Context";
 
 const loaderOptions = {
   classList: ["fetching"],
@@ -41,7 +39,7 @@ const update = () => {
   if (Context.data?.coverUrl && cover.src !== Context.data?.coverUrl) {
     banner.style.backgroundImage = `url(${Context.data.coverUrl})`;
     cover.parentElement.classList.add("loading");
-    loadImage(Context.data.coverUrl).then(() => {
+    LoadImage(Context.data.coverUrl).then(() => {
       cover.parentElement.classList.remove("loading");
       cover.src = Context.data.coverUrl;
     });
@@ -57,7 +55,7 @@ const update = () => {
       fragment = document.createDocumentFragment();
       Context.data.artists.forEach((artist, i) => {
         if (i) fragment.appendChild(document.createTextNode(", "));
-        const anchor = createAnchor("");
+        const anchor = CreateAnchor("");
         anchor.textContent = artist;
         fragment.appendChild(anchor);
       });
@@ -78,7 +76,7 @@ const update = () => {
       fragment = document.createDocumentFragment();
       Context.data.authors.forEach((author, i) => {
         if (i) fragment.appendChild(document.createTextNode(", "));
-        const anchor = createAnchor("");
+        const anchor = CreateAnchor("");
         anchor.textContent = author;
         fragment.appendChild(anchor);
       });
@@ -99,7 +97,7 @@ const update = () => {
       fragment = document.createDocumentFragment();
       Context.data.genres.forEach((genre, i) => {
         if (i) fragment.appendChild(document.createTextNode(", "));
-        const anchor = createAnchor("");
+        const anchor = CreateAnchor("");
         anchor.textContent = genre;
         fragment.appendChild(anchor);
       });
@@ -126,7 +124,7 @@ const updateChapters = () => {
     fragment = document.createDocumentFragment();
     Context.data.chapters.forEach(chapter => {
       const item = document.createElement("li");
-      const anchor = createAnchor(`/read/${chapter.sourceId}${chapter.path}`);
+      const anchor = CreateAnchor(`/read/${chapter.sourceId}${chapter.path}`);
       item.classList.add("chapter");
 
       const name = document.createElement("h3");
@@ -138,13 +136,13 @@ const updateChapters = () => {
 
       const date = document.createElement("span");
       date.classList.add("publishedAt");
-      date.textContent = formatUnix(chapter.publishedAt);
+      date.textContent = FormatUnix(chapter.publishedAt);
       info.appendChild(date);
 
       if (chapter.groups?.length) {
         const groups = document.createElement("span");
         groups.classList.add("groups");
-        groups.textContent = formatGroups(chapter.groups);
+        groups.textContent = FormatGroups(chapter.groups);
         info.append(document.createTextNode(" • "), groups);
       }
 
@@ -283,37 +281,47 @@ const render = async () => {
 
     create();
     await WithLoader(async () => {
-      Context.data = await sendRequest<Manga>(buildUrl("/api/metadata"));
-      if (!mounted.current) return;
-
+      {
+        const { content } = await SendRequest<Manga>(buildUrl("/api/metadata"));
+        if (!MountedRef.current) {
+          return;
+        }
+        if (content) Context.data = content;
+      }
       Router.setTitle(Context.data.title);
       update();
 
-      Context.data.chapters = (await sendRequest<ApiChapterResponse>(buildUrl("/api/chapters")))?.entries;
-      if (!mounted.current) return;
-      updateChapters();
+      const { content } = await SendRequest<ApiChapter>(buildUrl("/api/chapters"));
+      if (MountedRef.current && content) {
+        Context.data.chapters = content.entries;
+        updateChapters();
+      }
     }, loaderOptions);
-  } else {
-    await WithLoader(async () => {
-      Context.data = await sendRequest<Manga>(buildUrl("/api/metadata"));
-    });
-
-    Router.setTitle(Context.data.title);
-    create();
-
-    Context.data.chapters = (
-      await WithLoader(() => sendRequest<ApiChapterResponse>(buildUrl("/api/chapters")), loaderOptions)
-    )?.entries;
-
-    if (!mounted.current) return;
-    updateChapters();
+    return;
   }
+
+  await WithLoader(async () => {
+    const { content } = await SendRequest<Manga>(buildUrl("/api/metadata"));
+    if (!MountedRef.current) return;
+    Context.data = content;
+  });
+  if (!MountedRef.current) return;
+  Router.setTitle(Context.data.title);
+  create();
+
+  await WithLoader(async () => {
+    const { content } = await SendRequest<ApiChapter>(buildUrl("/api/chapters"));
+    if (!MountedRef.current) return;
+    Context.data.chapters = content.entries;
+  });
+  if (!MountedRef.current) return;
+  updateChapters();
 };
 
 const destroy = () => {};
 
-export default defineComponent({
-  mounted,
+export default DefineComponent({
+  mountedRef: MountedRef,
   render,
   destroy
 });

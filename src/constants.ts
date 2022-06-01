@@ -10,7 +10,7 @@ export const MangaStatusKeys = Object.keys(MangaStatus).filter(k => Number.isNaN
 export const MangaStatusValues = Object.values(MangaStatus).filter(v => !Number.isNaN(Number(v)));
 
 export enum ReadingStatus {
-  Unknown,
+  None,
   Reading,
   Planned,
   OnHold = "On Hold",

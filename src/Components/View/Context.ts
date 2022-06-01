@@ -1,4 +1,5 @@
-import { generateUniqueString } from "../../App";
+import { GenerateUniqueString } from "../../App";
 
-export const id = generateUniqueString();
+export const ID = GenerateUniqueString();
+export const MountedRef = { current: false };
 export default {} as ViewContext;

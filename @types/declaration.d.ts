@@ -1,8 +1,10 @@
 import { MangaStatus, ReadingStatus } from "../src/constants";
 
 declare global {
+  type Ref<T> = { current: T };
+
   interface Component {
-    mounted: { current: boolean };
+    mountedRef: Ref<boolean>;
     keepCommons?: boolean;
     create?(): HTMLElement;
     destroy(): void;
@@ -19,6 +21,24 @@ declare global {
     data?: T;
     preventDefault?: boolean;
     lastBrowseContext?: BrowseContext;
+  }
+
+  interface Extension {
+    id: string;
+    baseUrl: string;
+    name: string;
+    language: string;
+    version: string;
+
+    hasUpdate?: boolean;
+    isInstalled?: boolean;
+  }
+
+  interface Filter {
+    name: string;
+    key: string;
+    type?: string;
+    options: { [key: string]: string };
   }
 
   interface Chapter {
@@ -56,40 +76,40 @@ declare global {
     description?: string;
     status?: MangaStatus;
     readingStatus?: ReadingStatus;
-    inLibrary?: boolean;
     artists?: string[];
     authors?: string[];
     genres?: string[];
     chapters?: Chapter[];
   }
 
-  interface Filter {
-    name: string;
-    key: string;
-    type?: string;
-    options: { [key: string]: string };
+  interface HttpResponse<T> {
+    status: number;
+    content: T;
   }
 
-  interface ApiBrowseResponse {
+  interface ApiBrowse {
     page: number;
     hasNext: boolean;
     entries: Manga[];
     execDuration: number;
   }
 
-  interface ApiChapterResponse {
+  interface ApiChapter {
     entries: Chapter[];
     execDuration: string;
   }
 
-  interface Extension {
-    id: string;
-    baseUrl: string;
-    name: string;
-    language: string;
-    version: string;
+  interface BrowseContext {
+    currentExtension?: Extension;
+    extensions: Map<string, Extension>;
+    installedExtensions: Map<string, Extension>;
+    filters?: Set<Filter>;
 
-    hasUpdate?: boolean;
-    isInstalled?: boolean;
+    data?: ApiBrowse;
+    entries: Manga[];
+  }
+
+  interface ViewContext {
+    data?: Manga;
   }
 }

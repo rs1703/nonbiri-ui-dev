@@ -1,7 +1,7 @@
 let rootElement: HTMLElement;
 let container: HTMLElement;
 
-export const defineComponent = (component: Component) => component;
+export const DefineComponent = (component: Component) => component;
 
 const getRoot = () => (rootElement ??= document.getElementById("app"));
 

@@ -1,12 +1,12 @@
-import { defineComponent } from "../../DOM";
+import { DefineComponent } from "../../DOM";
 
-const mounted = { current: false };
+const mountedRef = { current: false };
 
 const render = () => {};
 const destroy = () => {};
 
-export default defineComponent({
-  mounted,
+export default DefineComponent({
+  mountedRef,
   render,
   destroy
 });

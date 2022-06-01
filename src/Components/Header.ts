@@ -23,25 +23,28 @@ const createNavigation = () => {
       li.classList.add("active");
     }
 
-    const a = document.createElement("a");
-    a.href = route.path;
-    a.textContent = route.name;
+    const anchor = document.createElement("a");
+    anchor.href = route.path;
+    anchor.textContent = route.name;
 
-    a.addEventListener("click", ev => {
+    anchor.addEventListener("click", ev => {
+      if (ev.ctrlKey || ev.shiftKey || ev.metaKey) {
+        return;
+      }
       ev.preventDefault();
 
-      if (window.location.href === a.href) return;
-      if (!window.location.href.startsWith(a.href)) {
+      if (window.location.href === anchor.href) return;
+      if (!window.location.href.startsWith(anchor.href)) {
         const prevActive = ul.querySelector(".active");
         if (prevActive && prevActive !== li) prevActive.classList.remove("active");
         if (!li.classList.contains("active")) li.classList.add("active");
       }
 
       console.info("Header.ts Router.navigate");
-      Router.navigate(a.href);
+      Router.navigate(anchor.href);
     });
 
-    li.appendChild(a);
+    li.appendChild(anchor);
     ul.appendChild(li);
   });
   nav.appendChild(ul);
