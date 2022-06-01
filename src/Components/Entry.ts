@@ -9,11 +9,11 @@ const removedText = "Add to library";
 const setReadState = async (data: Manga, state: ReadingStatus, mountedRef: Ref<boolean>) => {
   const url = `/api/library/manga/readState?sourceId=${data.sourceId}&path=${data.path}&state=${ReadingStatusValues[state]}`;
   const { status, content } = await SendRequest<Manga>(url, "POST");
-  if (mountedRef.current && status === 200) {
-    Object.assign(data, {
-      ...content,
-      readingStatus: state
-    });
+  if (mountedRef.current && (status === 200 || status === 304)) {
+    if (content) Object.assign(data, content);
+    if (state === ReadingStatus.None) {
+      delete data.readingStatus;
+    } else data.readingStatus = state;
   }
 };
 

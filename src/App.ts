@@ -49,7 +49,7 @@ export const SendRequest = async <T = any>(path: string, method = "GET", body?: 
     xhr.open(method, path);
 
     xhr.addEventListener("load", () => {
-      if (xhr.status === 200) {
+      if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
         let data: T;
         if (xhr.responseText) {
           try {
