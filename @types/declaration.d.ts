@@ -34,11 +34,23 @@ declare global {
     isInstalled?: boolean;
   }
 
-  interface Filter {
-    name: string;
+  interface Pair {
     key: string;
+    value: string;
+  }
+
+  interface Option {
+    key: string;
+    value: string;
+    defaultOption?: boolean;
+  }
+
+  interface Filter {
+    key: string;
+    title: string;
+    description?: string;
     type?: string;
-    options: { [key: string]: string };
+    options: Option[];
   }
 
   interface Chapter {

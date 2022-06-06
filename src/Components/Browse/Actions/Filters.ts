@@ -24,17 +24,24 @@ const create = () => {
   resetBtn.type = "button";
   resetBtn.textContent = "Reset";
 
-  resetBtn.addEventListener("click", ev => {
+  resetBtn.addEventListener("click", () => {
     const url = new URL(window.location.href);
-    container.querySelectorAll("input, select").forEach(element => {
-      if (element instanceof HTMLInputElement) {
-        if (element.type === "checkbox") {
-          element.checked = url.searchParams.getAll(element.name).includes(element.value);
+    container.querySelectorAll("input, select").forEach((element: HTMLInputElement | HTMLSelectElement) => {
+      const currentValue = url.searchParams.get(element.name);
+      if (element instanceof HTMLSelectElement) {
+        const defaultOption = element.querySelector("[data-default]") as HTMLOptionElement;
+        if (currentValue === element.value) {
+          element.value = defaultOption?.value || element.options[0].value;
         } else {
-          element.checked = url.searchParams.get(element.name) === element.value;
+          element.value = currentValue || defaultOption?.value || element.options[0].value;
         }
-      } else if (element instanceof HTMLSelectElement) {
-        element.value = url.searchParams.get(element.name) || element.options[0].value;
+      } else if (element instanceof HTMLInputElement) {
+        const isDefault = element.hasAttribute("data-default");
+        if (element.type === "checkbox") {
+          element.checked = url.searchParams.getAll(element.name).includes(element.value) || isDefault;
+        } else {
+          element.checked = url.searchParams.get(element.name) === element.value || isDefault;
+        }
       }
     });
   });

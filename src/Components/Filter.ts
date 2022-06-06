@@ -4,59 +4,64 @@ export default (filter: Filter) => {
   root.dataset.key = filter.key;
   root.dataset.type = filter.type;
 
-  const name = document.createElement("h2");
-  name.classList.add("name");
-  name.textContent = filter.name;
+  const title = document.createElement("h2");
+  title.classList.add("title");
+  title.textContent = filter.title;
 
   const container = document.createElement("div");
   container.classList.add("options");
 
-  const searchParams = new URLSearchParams(window.location.search);
-
   let select: HTMLSelectElement;
-  if (filter.type === "select") {
+  const isSelect = filter.type === "select";
+  const isCheckbox = filter.type === "checkbox";
+
+  if (isSelect) {
     select = document.createElement("select");
     select.name = filter.key;
-
-    const currentValue = searchParams.get(filter.key);
-    if (currentValue && Object.values(filter.options).includes(currentValue)) {
-      select.value = currentValue;
-    }
   }
 
-  Object.keys(filter.options).forEach(key => {
-    if (filter.type === "checkbox" || filter.type === "radio") {
-      const label = document.createElement("label");
-      const input = document.createElement("input");
-      input.type = filter.type;
-      input.name = filter.key;
-      input.value = filter.options[key];
+  const searchParams = new URLSearchParams(window.location.search);
+  filter.options.forEach(({ key, value, defaultOption }) => {
+    if (isSelect) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = key;
 
-      if (filter.type === "checkbox") {
-        input.defaultChecked = searchParams.getAll(filter.key).includes(filter.options[key]);
-      } else {
-        input.defaultChecked = searchParams.get(filter.key) === filter.options[key];
+      if (defaultOption) {
+        option.dataset.default = "true";
       }
 
-      const span = document.createElement("span");
-      span.textContent = key;
-      container.appendChild(label);
-    } else if (filter.type === "select") {
-      const option = document.createElement("option");
-      option.value = filter.options[key];
-      option.defaultSelected = searchParams.get(filter.key) === filter.options[key];
-      option.textContent = key;
+      if (searchParams.has(filter.key)) {
+        option.defaultSelected = searchParams.get(filter.key) === value;
+      } else option.defaultSelected = defaultOption;
+
       select.appendChild(option);
-    } else {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = key;
-      btn.dataset.value = filter.options[key];
-      container.appendChild(btn);
+      return;
     }
+
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    const span = document.createElement("span");
+
+    input.type = filter.type;
+    input.name = filter.key;
+    input.value = value;
+    span.textContent = key;
+
+    if (defaultOption) {
+      input.dataset.default = "true";
+    }
+
+    if (searchParams.has(filter.key)) {
+      if (isCheckbox) input.defaultChecked = searchParams.getAll(filter.key).includes(value);
+      else input.defaultChecked = searchParams.get(filter.key) === value;
+    } else input.defaultChecked = defaultOption;
+
+    label.append(input, span);
+    container.appendChild(label);
   });
 
   if (select) container.appendChild(select);
-  root.append(name, container);
+  root.append(title, container);
   return root;
 };
