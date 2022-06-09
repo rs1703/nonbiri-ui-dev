@@ -47,6 +47,7 @@ declare global {
 
   interface Filter {
     key: string;
+    excludedKey?: string;
     title: string;
     description?: string;
     type?: string;

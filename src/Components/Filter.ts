@@ -1,10 +1,13 @@
 export default (filter: Filter) => {
   const root = document.createElement("div");
-  root.classList.add("filter", `filter-${filter.key}`, filter.key);
+  root.classList.add("filter");
   root.dataset.key = filter.key;
+  if (filter.excludedKey) {
+    root.dataset.excludedKey = filter.excludedKey;
+  }
   root.dataset.type = filter.type;
 
-  const title = document.createElement("h2");
+  const title = document.createElement("strong");
   title.classList.add("title");
   title.textContent = filter.title;
 
@@ -50,6 +53,24 @@ export default (filter: Filter) => {
 
     if (defaultOption) {
       input.dataset.default = "true";
+    }
+
+    if (isCheckbox && filter.excludedKey) {
+      input.addEventListener("click", ev => {
+        console.info(input.name, input.checked);
+        if (!input.checked) {
+          if (input.name === filter.excludedKey) {
+            input.name = filter.key;
+            input.removeAttribute("data-excluded");
+          } else {
+            input.name = filter.excludedKey;
+            input.checked = true;
+            input.dataset.excluded = "true";
+          }
+        } else {
+          input.checked = true;
+        }
+      });
     }
 
     if (searchParams.has(filter.key)) {
