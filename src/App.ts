@@ -1,5 +1,24 @@
+import Router from "./Router";
+
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const charactersLength = characters.length;
+
+export const BuildURL = (pathname: string, params?: { [k: string]: any }) => {
+  const url = new URL(window.location.origin);
+  url.pathname = pathname;
+
+  url.searchParams.set("domain", Router.getCurrentExtensionId());
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  }
+  if (!url.searchParams.has("path")) {
+    url.searchParams.set("path", `/${window.location.pathname.split("/").slice(3).join("/")}`);
+  }
+
+  return decodeURIComponent(url.href);
+};
+
+export const CreateRef = <T>(value: T): Ref<T> => ({ current: value });
 
 export const GenerateUniqueString = () => {
   let result = "_";
@@ -59,7 +78,7 @@ export const SendRequest = async <T = any>(path: string, method = "GET", body?: 
             return;
           }
         }
-        resolve({ status: xhr.status, content: data });
+        resolve({ statusCode: xhr.status, content: data });
       } else reject(Error(`Request failed: ${xhr.status} ${xhr.statusText}`));
     });
 
@@ -69,3 +88,16 @@ export const SendRequest = async <T = any>(path: string, method = "GET", body?: 
 
     xhr.send(body);
   });
+
+export const WithMutex = async (mutexRef: Ref<boolean>, callback: () => void | Promise<void>) => {
+  if (mutexRef.current) {
+    return;
+  }
+  mutexRef.current = true;
+
+  try {
+    await callback();
+  } finally {
+    mutexRef.current = false;
+  }
+};

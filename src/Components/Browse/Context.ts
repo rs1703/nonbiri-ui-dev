@@ -5,6 +5,7 @@ export const MountedRef = { current: false };
 export default {
   extensions: new Map<string, Extension>(),
   installedExtensions: new Map<string, Extension>(),
-  filters: new Set<Filter>(),
-  entries: []
+  filters: [],
+  entries: [],
+  index: new Map<string, number>()
 } as BrowseContext;

@@ -11,7 +11,7 @@ class Router {
 
   private initialized = false;
   private currentRoute: Route;
-  private onChangeHandlers: Array<() => void> = [];
+  private onChangeHandlers = new Map<string, () => Promise<void>>();
 
   init(routes: Routes) {
     if (this.initialized) return;
@@ -58,8 +58,8 @@ class Router {
     window.history.replaceState(state, "", this.getCurrentPath());
   }
 
-  addOnChangeHandler(handler: () => void) {
-    this.onChangeHandlers.push(handler);
+  setOnChangeHandler(key: string, handler: () => Promise<void>) {
+    this.onChangeHandlers.set(key, handler);
   }
 
   navigate<T>(path: string, state: State<T> = {}) {
@@ -103,7 +103,10 @@ class Router {
       document.body.dataset.route = this.currentRoute.path;
       this.setTitle();
 
-      this.onChangeHandlers.forEach(handler => handler());
+      if (this.onChangeHandlers.size) {
+        await Promise.all(Array.from(this.onChangeHandlers.values()).map(handler => handler()));
+      }
+
       if (this.currentRoute?.component?.render) {
         this.currentRoute.component.mountedRef.current = true;
         this.currentRoute.component.render();

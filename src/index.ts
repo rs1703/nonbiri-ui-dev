@@ -4,7 +4,7 @@ import Routes from "./Routes";
 import "./styles/index.less";
 
 const main = () => {
-  Router.addOnChangeHandler(() => {
+  Router.setOnChangeHandler("0", async () => {
     const route = Router.getCurrentRoute();
     if ([Routes.library, Routes.history, Routes.updates, Routes.browse, Routes.view].includes(route)) {
       [Header].forEach(c => c.render());

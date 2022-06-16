@@ -14,364 +14,354 @@ main {
   position: relative;
   font-size: 0;
 
-  &#browse {
-    align-items: flex-start;
-    display: flex;
-    padding: 0 1rem;
-    gap: 1rem;
+  > * {
+    font-size: @fs;
   }
+}
+
+main#browse {
+  align-items: flex-start;
+  display: flex;
+  padding: 0 1rem;
+  gap: 1rem;
+}
+
+main > .loader.global {
+  position: relative;
+  overflow: hidden;
+
+  width: 100%;
+  height: calc(100vh - @header-height);
+}
+
+main > .loader.pagination,
+main > .loader.fetching {
+  position: fixed;
+  z-index: 10;
+
+  right: 2rem;
+  bottom: 2rem;
+}
+
+main .show-actions {
+  @sz: 4.8rem;
+
+  box-shadow: 0 0 1.2rem rgba(0, 0, 0, 0.25);
+  background-color: fade(@bg-primary, 90%);
+  border-radius: 100%;
+  line-height: (@sz - 0.4rem);
+
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 99;
+
+  width: @sz;
+  height: @sz;
+  margin: 3rem;
+
+  &:hover,
+  &:active,
+  &:focus-visible {
+    background-color: @bg-primary;
+  }
+}
+
+@fpad: 1rem;
+main .actions.popup .filters {
+  display: flex;
+  flex-direction: column;
+  padding: @fpad;
+
+  footer {
+    border-top: 0.1rem solid @border-primary;
+
+    text-align: right;
+
+    margin: auto -@fpad -@fpad;
+    padding: @fpad;
+
+    button {
+      box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+      background-color: @bg-secondary;
+      border: 0.1rem solid @border-primary;
+      border-radius: 0.4rem;
+      padding: 0.6rem 1.2rem;
+
+      + button {
+        margin-left: 1rem;
+      }
+    }
+  }
+}
+
+main .actions.popup .filters .filter {
+  padding-bottom: @fpad;
+
+  &:not(:first-of-type) {
+    border-top: 0.1rem solid @border-primary;
+    padding-top: @fpad;
+  }
+
+  select {
+    box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+    background-color: @bg-secondary;
+    border: 0.1rem solid @border-primary;
+    border-radius: 0.4rem;
+
+    position: relative;
+
+    width: 100%;
+    padding: 0.6rem 1rem;
+  }
+
+  input[type="checkbox"] {
+    pointer-events: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+
+    & + span {
+      box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+      background-color: @bg-secondary;
+      border: 0.1rem solid @border-primary;
+      border-radius: 0.4rem;
+
+      vertical-align: top;
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      margin-top: 0.4rem;
+    }
+
+    &:checked:not([data-excluded]) + span {
+      box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25), inset 0 0 0 0.1rem #195a19;
+      border-color: #195a19;
+    }
+
+    &:checked[data-excluded] + span {
+      box-shadow: 0 0 0.25rem rgb(0 0 0 / 25%), inset 0 0 0 0.1rem #912828;
+      border-color: #912828;
+    }
+  }
+
+  select,
+  input[type="checkbox"] + span {
+    cursor: pointer;
+  }
+
+  select:hover,
+  select:active,
+  select:focus-visible,
+  input[type="checkbox"] + span:hover,
+  input[type="checkbox"]:active + span,
+  input[type="checkbox"]:focus-visible + span {
+    background-color: lighten(@bg-secondary, 2%);
+  }
+}
+
+main .actions.popup .filters .filter[data-type="select"] .options:after {
+  content: "";
+
+  border-right: @text 0.2rem solid;
+  border-bottom: @text 0.2rem solid;
+  transform: rotate(45deg);
+
+  position: absolute;
+  top: 1rem;
+  right: 1.4rem;
+
+  width: 1rem;
+  height: 1rem;
+}
+
+main .actions.popup .filters .filter[data-type="checkbox"] .options {
+  @m: 0.4rem;
+  margin-top: @m;
+
+  label:not(:last-child) span {
+    margin-right: @m;
+  }
+}
+
+main .actions.popup .filters .filter .title {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+main .actions.popup .filters .filter .options {
+  position: relative;
+}
+
+main .actions.popup .popup-content {
+  box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.25);
+  background-color: @bg-primary;
+  border-radius: 0.4rem;
+  max-width: 76.8rem;
+}
+
+main .actions.popup .search-form {
+  box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+  background-color: @bg-secondary;
+  border-bottom: 0.2rem solid @border-primary;
+
+  position: sticky;
+  top: 0;
+  z-index: 98;
+
+  display: flex;
+
+  > * {
+    padding: 1rem 1.4rem;
+  }
+
+  input {
+    flex: 1 0;
+  }
+}
+
+@entriesPad: 1rem;
+main .entries {
+  font-size: 0;
+
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(8, 1fr);
+
+  width: 100%;
 
   > * {
     font-size: @fs;
   }
 
-  > .loader.global {
-    position: relative;
-    overflow: hidden;
+  @media (max-width: 1770px) {
+    grid-template-columns: repeat(7, 1fr);
+  }
 
+  @media (max-width: 1580px) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  @media (max-width: 1150px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  @media (max-width: 960px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 770px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 580px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+main .entries .entry {
+  transition: 0.2s ease-in-out opacity;
+  position: relative;
+
+  padding-top: calc(3 / 2.15 * 100%);
+  height: 0;
+
+  &:empty {
+    opacity: 0;
+  }
+}
+
+main .entries .entry:not(:hover) figure .actions button {
+  opacity: 0;
+}
+
+main .entries .entry[data-followed] .thumbnail,
+main .entries .entry[data-unfollowed] .thumbnail {
+  filter: brightness(0.4);
+}
+
+main .entries .entry figure {
+  background-color: @bg-primary;
+  border-radius: 0.4rem;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  overflow: hidden;
+}
+
+main .entries .entry figure .thumbnail {
+  transition: 0.2s ease-in-out opacity;
+  background-size: cover;
+  background-position: center;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0%;
+  bottom: 0;
+
+  &:not([style]) {
+    opacity: 0;
+  }
+}
+
+main .entries .entry figure .actions {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
+  button {
+    background-color: fade(#000, 75%);
+
+    font-family: @ff-secondary;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.12rem;
+    line-height: 1.9rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #fff;
+
+    display: block;
     width: 100%;
-    height: calc(100vh - @header-height);
-  }
+    height: 3.2rem;
+    padding: 0.8rem;
 
-  > .loader.pagination,
-  > .loader.fetching {
-    position: fixed;
-    z-index: 10;
-
-    right: 2rem;
-    bottom: 2rem;
-  }
-
-  .show-actions {
-    box-shadow: 0 0 1.2rem rgba(0, 0, 0, 0.25);
-    background-color: fade(@bg-primary, 90%);
-    border-radius: 100%;
-
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    z-index: 99;
-
-    @sz: 4.8rem;
-    width: @sz;
-    height: @sz;
-    line-height: (@sz - 0.4rem);
-
-    margin: 3rem;
-
-    &:hover,
-    &:active,
-    &:focus-visible {
-      background-color: @bg-primary;
+    &:hover {
+      background-color: fade(#000, 85%);
     }
   }
+}
 
-  .actions.popup {
-    .popup-content {
-      box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.25);
-      background-color: @bg-primary;
-      border-radius: 0.4rem;
-      max-width: 76.8rem;
-    }
+main .entries .entry .metadata {
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.5) 100%);
 
-    .search-form {
-      box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
-      background-color: @bg-secondary;
-      border-bottom: 0.2rem solid @border-primary;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 
-      position: sticky;
-      top: 0;
-      z-index: 98;
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 1rem;
+}
 
-      display: flex;
+main .entries .entry .title {
+  font-family: @ff-secondary;
+  text-shadow: 0 0 0.25rem #000, 0 0 0.25rem fade(#000, 50%), 0 0 0.25rem fade(#000, 25%), 0 0 0.25rem fade(#000, 25%),
+    0 0 0.25rem fade(#000, 25%);
+  color: #fff;
 
-      > * {
-        padding: 1rem 1.4rem;
-      }
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 
-      input {
-        flex: 1 0;
-      }
-    }
-
-    @fpad: 1rem;
-    .filters {
-      display: flex;
-      flex-direction: column;
-      padding: @fpad;
-
-      .filter {
-        padding-bottom: @fpad;
-
-        &:not(:first-of-type) {
-          border-top: 0.1rem solid @border-primary;
-          padding-top: @fpad;
-        }
-
-        .title {
-          display: block;
-          margin-bottom: 0.4rem;
-        }
-
-        .options {
-          position: relative;
-        }
-
-        select {
-          box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
-          background-color: @bg-secondary;
-          border: 0.1rem solid @border-primary;
-          border-radius: 0.4rem;
-
-          position: relative;
-
-          width: 100%;
-          padding: 0.6rem 1rem;
-        }
-
-        input {
-          &[type="checkbox"] {
-            pointer-events: none;
-            position: absolute;
-            width: 0;
-            height: 0;
-            opacity: 0;
-
-            & + span {
-              box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
-              background-color: @bg-secondary;
-              border: 0.1rem solid @border-primary;
-              border-radius: 0.4rem;
-
-              vertical-align: top;
-              display: inline-block;
-              padding: 0.6rem 1.2rem;
-              margin-top: 0.4rem;
-            }
-
-            &:checked {
-              &:not([data-excluded]) + span {
-                box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25), inset 0 0 0 0.1rem #195a19;
-                border-color: #195a19;
-              }
-              &[data-excluded] + span {
-                box-shadow: 0 0 0.25rem rgb(0 0 0 / 25%), inset 0 0 0 0.1rem #912828;
-                border-color: #912828;
-              }
-            }
-          }
-        }
-
-        select,
-        input[type="checkbox"] + span {
-          cursor: pointer;
-        }
-
-        select:hover,
-        select:active,
-        select:focus-visible,
-        input[type="checkbox"] + span:hover,
-        input[type="checkbox"]:active + span,
-        input[type="checkbox"]:focus-visible + span {
-          background-color: lighten(@bg-secondary, 2%);
-        }
-
-        &[data-type="select"] {
-          .options:after {
-            content: "";
-
-            border-right: @text 0.2rem solid;
-            border-bottom: @text 0.2rem solid;
-            transform: rotate(45deg);
-
-            position: absolute;
-            top: 1rem;
-            right: 1.4rem;
-
-            width: 1rem;
-            height: 1rem;
-          }
-        }
-
-        &[data-type="checkbox"] {
-          @sp: 0.4rem;
-          .options {
-            margin-top: -@sp;
-            label:not(:last-child) span {
-              margin-right: 0.4rem;
-            }
-          }
-        }
-      }
-
-      footer {
-        border-top: 0.1rem solid @border-primary;
-
-        text-align: right;
-
-        margin: auto -@fpad -@fpad;
-        padding: @fpad;
-
-        button {
-          box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
-          background-color: @bg-secondary;
-          border: 0.1rem solid @border-primary;
-          border-radius: 0.4rem;
-          padding: 0.6rem 1.2rem;
-
-          + button {
-            margin-left: 1rem;
-          }
-        }
-      }
-    }
-  }
-
-  @entriesPad: 1rem;
-  .entries {
-    font-size: 0;
-
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(8, 1fr);
-
-    width: 100%;
-
-    > * {
-      font-size: @fs;
-    }
-
-    @media (max-width: 1770px) {
-      grid-template-columns: repeat(7, 1fr);
-    }
-
-    @media (max-width: 1580px) {
-      grid-template-columns: repeat(6, 1fr);
-    }
-
-    @media (max-width: 1150px) {
-      grid-template-columns: repeat(5, 1fr);
-    }
-
-    @media (max-width: 960px) {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
-    @media (max-width: 770px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    @media (max-width: 580px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .entry {
-      transition: 0.2s ease-in-out opacity;
-
-      position: relative;
-      padding-top: calc(3 / 2.15 * 100%);
-      height: 0;
-
-      &:empty {
-        opacity: 0;
-      }
-
-      figure {
-        background-color: @bg-primary;
-        border-radius: 0.4rem;
-
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        overflow: hidden;
-
-        .thumbnail {
-          transition: 0.2s ease-in-out opacity;
-          background-size: cover;
-          background-position: center;
-
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0%;
-          bottom: 0;
-
-          &:not([style]) {
-            opacity: 0;
-          }
-        }
-
-        .actions {
-          position: relative;
-          overflow: hidden;
-          z-index: 1;
-
-          button {
-            background-color: fade(#000, 75%);
-
-            font-family: @ff-secondary;
-            font-size: 1.2rem;
-            font-weight: 500;
-            letter-spacing: 0.12rem;
-            line-height: 1.9rem;
-            text-transform: uppercase;
-            white-space: nowrap;
-            color: #fff;
-
-            display: block;
-            width: 100%;
-            height: 3.2rem;
-            padding: 0.8rem;
-
-            &:hover {
-              background-color: fade(#000, 85%);
-            }
-          }
-        }
-      }
-
-      &:not(:hover) figure .actions button {
-        opacity: 0;
-      }
-
-      &[data-followed],
-      &[data-unfollowed] {
-        .thumbnail {
-          filter: brightness(0.4);
-        }
-      }
-
-      .metadata {
-        background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.5) 100%);
-
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        display: flex;
-        flex-direction: column-reverse;
-        padding: 1rem;
-
-        .title {
-          font-family: @ff-secondary;
-          text-shadow: 0 0 0.25rem #000, 0 0 0.25rem fade(#000, 50%), 0 0 0.25rem fade(#000, 25%),
-            0 0 0.25rem fade(#000, 25%), 0 0 0.25rem fade(#000, 25%);
-          color: #fff;
-
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-
-          overflow: hidden;
-          text-overflow: ellipsis;
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-        }
-      }
-    }
-  }
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }

@@ -23,6 +23,11 @@ declare global {
     lastBrowseContext?: BrowseContext;
   }
 
+  interface HistoryState {
+    current?: State;
+    previous?: State;
+  }
+
   interface Extension {
     domain: string;
     baseUrl: string;
@@ -97,7 +102,7 @@ declare global {
   }
 
   interface HttpResponse<T> {
-    status: number;
+    statusCode: number;
     content: T;
   }
 
@@ -117,10 +122,12 @@ declare global {
     currentExtension?: Extension;
     extensions: Map<string, Extension>;
     installedExtensions: Map<string, Extension>;
-    filters?: Set<Filter>;
+    filters?: Filter[];
 
-    data?: ApiBrowse;
+    page?: number;
+    hasNext?: boolean;
     entries: Manga[];
+    index: Map<string, number>;
   }
 
   interface ViewContext {

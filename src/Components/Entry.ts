@@ -1,20 +1,28 @@
-import { LoadImage, SendRequest } from "../App";
-import { ReadingStatus, ReadingStatusValues } from "../constants";
+import { BuildURL, CreateRef, LoadImage, SendRequest, WithMutex } from "../App";
+import { Paths, ReadingStatus } from "../constants";
+import dictionary from "../dictionary";
 import { CreateAnchor } from "../DOMElements";
 import Router from "../Router";
 
-const addedText = "Remove from library";
-const removedText = "Add to library";
-
 const setReadState = async (data: Manga, state: ReadingStatus, mountedRef: Ref<boolean>) => {
-  const url = `/api/library/manga/readState?domain=${data.domain}&path=${data.path}&state=${ReadingStatusValues[state]}`;
-  const { status, content } = await SendRequest<Manga>(url, "POST");
-  if (mountedRef.current && (status === 200 || status === 304)) {
-    if (content) Object.assign(data, content);
+  const url = BuildURL(Paths.setMangaReadState, { state, path: data.path });
+  const { statusCode: status, content } = await SendRequest<Manga>(url, "POST");
+  if (!mountedRef.current || status >= 400) return;
+
+  if (content) Object.assign(data, content);
+  if (state === ReadingStatus.None) {
+    delete data.readingStatus;
+  } else data.readingStatus = state;
+
+  Router.setOnChangeHandler(data.path, async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const { data: d } = Router.getState<Manga>();
+    if (!d || d.path !== data.path) return;
     if (state === ReadingStatus.None) {
-      delete data.readingStatus;
-    } else data.readingStatus = state;
-  }
+      delete d.readingStatus;
+    } else d.readingStatus = state;
+    Router.setState({ data: d });
+  });
 };
 
 interface Entry extends HTMLDivElement {
@@ -90,29 +98,22 @@ export default (data: Manga, mountedRef: Ref<boolean>) => {
     const action = document.createElement("button");
     action.type = "button";
     action.classList.add("action");
-    action.textContent = data.readingStatus > 0 ? addedText : removedText;
+    action.textContent = dictionary.EN[data.readingStatus > 0 ? 2 : 1];
 
-    const mutexRef = { current: false };
-    action.addEventListener("click", async ev => {
+    const mutexRef = CreateRef(false);
+    action.addEventListener("click", ev => {
       ev.preventDefault();
       ev.stopPropagation();
       ev.stopImmediatePropagation();
 
-      if (mutexRef.current) {
-        return;
-      }
-      mutexRef.current = true;
-
-      try {
+      WithMutex(mutexRef, async () => {
         await setReadState(data, data.readingStatus > 0 ? ReadingStatus.None : ReadingStatus.Reading, mountedRef);
-        if (mountedRef.current) {
-          updateFollowStateAttr();
-          action.textContent = data.readingStatus > 0 ? addedText : removedText;
-          readStateListeners.forEach(fn => fn());
-        }
-      } finally {
-        mutexRef.current = false;
-      }
+        if (!mountedRef.current) return;
+
+        updateFollowStateAttr();
+        action.textContent = dictionary.EN[data.readingStatus > 0 ? 2 : 1];
+        readStateListeners.forEach(fn => fn());
+      });
     });
 
     actions.appendChild(action);

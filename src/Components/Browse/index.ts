@@ -26,11 +26,10 @@ const create = async () => {
   const container = document.createElement("div");
   container.classList.add("entries");
 
-  let appendEntries: (data: Manga[], hasNext: boolean) => void;
-  let currentPage: number = Context.data?.page || 1;
+  let appendEntries: (data: Manga[]) => void;
 
   const paginate = async (page: number) => {
-    url.searchParams.set("page", page.toString());
+    url.searchParams.set("page", Math.max(page || 1, 1).toString());
     if (Array.from(url.searchParams.keys()).some(key => !ignoreFields.includes(key))) {
       url.pathname = "/api/search";
     } else url.pathname = "/api/manga";
@@ -40,18 +39,28 @@ const create = async () => {
       return;
     }
 
-    if (content) Context.data = content;
-    if (Context.data.entries?.length) {
-      Context.entries.push(...Context.data.entries);
-    }
-    appendEntries(Context.data.entries, Context.data.hasNext);
+    Context.page = content.page;
+    Context.hasNext = content.hasNext;
 
-    currentPage = page;
+    if (content.entries?.length) {
+      const entries = [];
+      content.entries.forEach(entry => {
+        if (Context.index.has(entry.path)) {
+          return;
+        }
+
+        Context.index.set(entry.path, Context.entries.length);
+        Context.entries.push(entry);
+        entries.push(entry);
+      });
+      appendEntries(entries);
+    }
+
     window.dispatchEvent(new Event("pagination"));
     Router.setState({ lastBrowseContext: Context });
   };
 
-  appendEntries = (data: Manga[], hasNext: boolean) => {
+  appendEntries = (data: Manga[]) => {
     if (!data?.length) return;
 
     const fragment = document.createDocumentFragment();
@@ -64,21 +73,18 @@ const create = async () => {
     });
 
     container.appendChild(fragment);
-    if (hasNext) {
+    if (Context.hasNext) {
       setTimeout(() => {
         const observers: IntersectionObserver[] = [];
         const observerFn = (entries: IntersectionObserverEntry[]) => {
           if (entries[0].isIntersecting) {
             observers.forEach(observer => observer.disconnect());
-            WithLoader(() => paginate(currentPage + 1), loaderOptions);
+            WithLoader(() => paginate(Context.page + 1), loaderOptions);
           }
         };
 
         const lastIdx = container.childElementCount - 1;
-        const targetIdx = Math.min(
-          lastIdx,
-          Math.max(0, container.childElementCount - Math.floor(Context.data.entries.length / 2))
-        );
+        const targetIdx = Math.min(lastIdx, Math.max(0, container.childElementCount - Math.floor(data.length / 2)));
 
         if (targetIdx !== lastIdx) {
           const observer = new IntersectionObserver(observerFn);
@@ -93,10 +99,10 @@ const create = async () => {
     }
   };
 
-  if (Context.data && Context.entries?.length) {
-    appendEntries(Context.entries, Context.data.hasNext);
+  if (Context.entries?.length) {
+    appendEntries(Context.entries);
   } else {
-    await paginate(currentPage);
+    await paginate(Context.page);
     if (!MountedRef.current) {
       return undefined;
     }
@@ -111,7 +117,6 @@ const create = async () => {
       url.search = window.location.search;
       url.searchParams.set("domain", Context.currentExtension.domain);
 
-      Context.data = undefined;
       Context.entries = [];
 
       await WithLoader(() => paginate(1), loaderOptions);
@@ -119,10 +124,10 @@ const create = async () => {
   };
 
   pageChangeEventListener = () => {
-    Router.setTitle(`${Context.currentExtension.name} - Browse: Page ${currentPage}`);
+    Router.setTitle(`${Context.currentExtension.name} - Browse: Page ${Context.page}`);
   };
 
-  if (currentPage > 1) {
+  if (Context.page > 1) {
     pageChangeEventListener(undefined);
   }
 
@@ -206,8 +211,8 @@ const render = async () => {
 const destroy = () => {
   Context.currentExtension = undefined;
   Context.filters = undefined;
-  Context.data = undefined;
   Context.entries = [];
+  Context.index.clear();
 
   if (searchParamsChangeEventListener) {
     window.removeEventListener("popstate", searchParamsChangeEventListener);

@@ -5,7 +5,7 @@ import Context from "../Context";
 const ignoreFields = ["q", "id"];
 
 const create = () => {
-  if (!Context.filters?.size) {
+  if (!Context.filters?.length) {
     return undefined;
   }
 

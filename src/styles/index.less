@@ -34,6 +34,12 @@ body {
   line-height: @fs + (@fs * 0.25);
 }
 
+a:hover,
+a:active,
+a:focus-visible {
+  color: @text-strong;
+}
+
 h1,
 h2,
 h3,
@@ -46,30 +52,12 @@ strong {
   margin: 0;
 }
 
-a,
-button {
-  &:hover,
-  &:active,
-  &:focus-visible {
-    color: @text-strong;
-  }
-}
-
-h1 {
-  @sz: @fs + 0.4rem;
-  font-size: @sz;
-  line-height: @sz + (@sz*0.25);
-}
-
+h1,
 h2 {
   @sz: @fs + 0.2rem;
   font-size: @sz;
-  line-height: @sz + (@sz*0.25);
-}
-
-h1,
-h2 {
   font-weight: 600;
+  line-height: @sz + (@sz*0.25);
 }
 
 h3,
@@ -85,15 +73,6 @@ small {
   @sz: @fs - 0.2rem;
   font-size: @sz;
   line-height: @sz + (@sz*0.25);
-}
-
-a:hover,
-a:active,
-a:focus-visible,
-button:hover,
-button:active,
-button:focus-visible {
-  color: lighten(@text, 25%);
 }
 
 hr {

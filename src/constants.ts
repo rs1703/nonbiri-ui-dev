@@ -1,21 +1,25 @@
 export enum MangaStatus {
-  Unknown,
+  None,
   Ongoing,
   Completed,
   Hiatus,
-  Dropped
+  Cancelled
 }
 
-export const MangaStatusKeys = Object.keys(MangaStatus).filter(k => Number.isNaN(Number(k)));
-export const MangaStatusValues = Object.values(MangaStatus).filter(v => !Number.isNaN(Number(v)));
+export const MangaStatusText = ["None", "Ongoing", "Completed", "Hiatus", "Cancelled"];
 
 export enum ReadingStatus {
   None,
   Reading,
   Planned,
-  OnHold = "On Hold",
-  Dropped = "Dropped"
+  OnHold,
+  Dropped
 }
 
-export const ReadingStatusKeys = Object.keys(ReadingStatus).filter(k => Number.isNaN(Number(k)));
-export const ReadingStatusValues = Object.values(ReadingStatus).filter(v => !Number.isNaN(Number(v)));
+export const ReadingStatusText = ["None", "Reading", "Planned", "On Hold", "Dropped"];
+
+export const Paths = {
+  metadata: "/api/metadata",
+  chapters: "/api/chapters",
+  setMangaReadState: "/api/library/manga/readState"
+};
