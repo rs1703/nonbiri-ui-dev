@@ -14,10 +14,11 @@ const setReadState = async (data: Manga, state: ReadingStatus, mountedRef: Ref<b
     delete data.readingStatus;
   } else data.readingStatus = state;
 
-  Router.setOnChangeHandler(data.path, async () => {
+  const { path } = data;
+  Router.setOnChangeHandler(path, async () => {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const { data: d } = Router.getState<Manga>();
-    if (!d || d.path !== data.path) return;
+    if (!d || d.path !== path) return;
     if (state === ReadingStatus.None) {
       delete d.readingStatus;
     } else d.readingStatus = state;

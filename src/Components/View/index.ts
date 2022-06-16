@@ -105,10 +105,11 @@ const setReadState = (state: ReadingStatus) =>
     updateFollowState();
     Router.setState(Context);
 
-    Router.setOnChangeHandler(data.path, async () => {
+    const { path } = data;
+    Router.setOnChangeHandler(path, async () => {
       const { lastBrowseContext } = Router.getState<BrowseContext>();
       if (!lastBrowseContext?.entries && !lastBrowseContext?.index) return;
-      const idx = lastBrowseContext.index.get(Context.data.path);
+      const idx = lastBrowseContext.index.get(path);
       if (idx >= 0) {
         if (state === ReadingStatus.None) {
           delete lastBrowseContext.entries[idx].readingStatus;
