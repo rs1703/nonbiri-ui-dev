@@ -7,7 +7,7 @@ import Actions from "./Actions";
 import Context, { ID, MountedRef } from "./Context";
 import List from "./List";
 
-const ignoreFields = ["q", "sourceId", "page"];
+const ignoreFields = ["q", "domain", "page"];
 
 let searchParamsChangeEventListener: EventListenerOrEventListenerObject;
 let pageChangeEventListener: EventListenerOrEventListenerObject;
@@ -21,7 +21,7 @@ const loaderOptions = {
 const create = async () => {
   const url = new URL(window.location.origin);
   url.search = window.location.search;
-  url.searchParams.set("sourceId", Context.currentExtension.id);
+  url.searchParams.set("domain", Context.currentExtension.domain);
 
   const container = document.createElement("div");
   container.classList.add("entries");
@@ -109,7 +109,7 @@ const create = async () => {
       }
 
       url.search = window.location.search;
-      url.searchParams.set("sourceId", Context.currentExtension.id);
+      url.searchParams.set("domain", Context.currentExtension.domain);
 
       Context.data = undefined;
       Context.entries = [];
@@ -146,12 +146,12 @@ const render = async () => {
         if (!MountedRef.current) {
           return;
         }
-        if (content) content.forEach(ext => Context.extensions.set(ext.id, ext));
+        if (content) content.forEach(ext => Context.extensions.set(ext.domain, ext));
       }
 
       const { content } = await SendRequest<Extension[]>("/api/extensions");
       if (MountedRef.current && content?.length) {
-        content.forEach(ext => Context.installedExtensions.set(ext.id, ext));
+        content.forEach(ext => Context.installedExtensions.set(ext.domain, ext));
       }
     });
     if (!MountedRef.current) return;

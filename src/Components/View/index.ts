@@ -16,7 +16,7 @@ const buildUrl = (pathname: string) => {
   const url = new URL(window.location.origin);
   url.pathname = pathname;
 
-  url.searchParams.set("sourceId", Router.getCurrentExtensionId());
+  url.searchParams.set("domain", Router.getCurrentExtensionId());
   url.searchParams.set("path", `/${window.location.pathname.split("/").slice(3).join("/")}`);
 
   return url.href;
@@ -124,7 +124,7 @@ const updateChapters = () => {
     fragment = document.createDocumentFragment();
     Context.data.chapters.forEach(chapter => {
       const item = document.createElement("li");
-      const anchor = CreateAnchor(`/read/${chapter.sourceId}${chapter.path}`);
+      const anchor = CreateAnchor(`/read/${chapter.domain}${chapter.path}`);
       item.classList.add("chapter");
 
       const name = document.createElement("h3");

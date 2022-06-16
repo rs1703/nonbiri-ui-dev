@@ -24,11 +24,12 @@ declare global {
   }
 
   interface Extension {
-    id: string;
+    domain: string;
     baseUrl: string;
     name: string;
     language: string;
     version: string;
+    isNsfw: boolean;
 
     hasUpdate?: boolean;
     isInstalled?: boolean;
@@ -57,7 +58,7 @@ declare global {
   interface Chapter {
     id?: number;
     mangaId?: string;
-    sourceId: string;
+    domain: string;
     addedAt?: number;
     updatedAt?: number;
     publishedAt: number;
@@ -76,7 +77,7 @@ declare global {
 
   interface Manga {
     id?: number;
-    sourceId: string;
+    domain: string;
     addedAt?: number;
     updatedAt?: number;
     lastReadAt?: number;

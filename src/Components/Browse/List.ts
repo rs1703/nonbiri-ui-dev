@@ -4,7 +4,7 @@ import Context, { ID } from "./Context";
 
 const createExtItem = (ext: Extension) => {
   const item = document.createElement("li");
-  item.dataset.id = `ext-${ext.id}`;
+  item.dataset.domain = `ext-${ext.domain}`;
 
   const btn = document.createElement("button");
   btn.type = "button";
@@ -32,7 +32,7 @@ const createExtItem = (ext: Extension) => {
 const attachSourceOnClick = (ext: Extension, btn: HTMLButtonElement) => {
   btn.addEventListener("click", ev => {
     console.info("List.ts Router.navigate");
-    Router.navigate(`/browse/${ext.id}`);
+    Router.navigate(`/browse/${ext.domain}`);
   });
 };
 

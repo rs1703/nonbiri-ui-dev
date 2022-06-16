@@ -7,7 +7,7 @@ const addedText = "Remove from library";
 const removedText = "Add to library";
 
 const setReadState = async (data: Manga, state: ReadingStatus, mountedRef: Ref<boolean>) => {
-  const url = `/api/library/manga/readState?sourceId=${data.sourceId}&path=${data.path}&state=${ReadingStatusValues[state]}`;
+  const url = `/api/library/manga/readState?domain=${data.domain}&path=${data.path}&state=${ReadingStatusValues[state]}`;
   const { status, content } = await SendRequest<Manga>(url, "POST");
   if (mountedRef.current && (status === 200 || status === 304)) {
     if (content) Object.assign(data, content);
@@ -47,7 +47,7 @@ export default (data: Manga, mountedRef: Ref<boolean>) => {
   };
   updateFollowStateAttr();
 
-  const anchor = CreateAnchor(`/view/${data.sourceId}${data.path}`, { data });
+  const anchor = CreateAnchor(`/view/${data.domain}${data.path}`, { data });
   anchor.title = data.title;
 
   let hideTimeout = 0;

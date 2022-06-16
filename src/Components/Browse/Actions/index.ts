@@ -8,7 +8,9 @@ import SearchForm from "./SearchForm";
 
 const create = async () => {
   if (!Context.filters?.size) {
-    const { content } = await SendRequest<Filter[]>(`/api/extensions/filters?sourceId=${Context.currentExtension.id}`);
+    const { content } = await SendRequest<Filter[]>(
+      `/api/extensions/filters?domain=${Context.currentExtension.domain}`
+    );
     if (!MountedRef.current) {
       return undefined;
     }
