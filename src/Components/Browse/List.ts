@@ -1,38 +1,116 @@
+import { BuildURL, CreateRef, SendRequest, WithMutex } from "../../App";
+import { Paths } from "../../constants";
+import dictionary from "../../dictionary";
 import DOM from "../../DOM";
-import Router from "../../Router";
-import Context, { ID } from "./Context";
+import { CreateAnchor } from "../../DOMElements";
+import Context, { MountedRef } from "./Context";
 
-const createExtItem = (ext: Extension) => {
-  const item = document.createElement("li");
-  item.dataset.domain = `ext-${ext.domain}`;
+let extensions: (update?: boolean) => void;
 
-  const btn = document.createElement("button");
-  btn.type = "button";
+const attachOnClick = (ext: Extension, target: HTMLButtonElement) => {
+  const container = document.createElement("div");
+  const mutexRef = CreateRef(false);
+  let state = false;
 
-  if (ext.hasUpdate) item.dataset.hasUpdate = "true";
-  if (ext.isInstalled) item.dataset.installed = "true";
+  const clear = () => {
+    while (container.firstChild) {
+      container.lastChild.remove();
+    }
+  };
 
-  const name = document.createElement("span");
-  name.classList.add("name");
-  name.textContent = ext.name;
+  const installHandler = () => {
+    WithMutex(mutexRef, async () => {
+      clear();
 
-  const version = document.createElement("span");
-  version.classList.add("version");
-  version.textContent = ext.version;
+      const text = document.createElement("span");
+      text.textContent = "Installing...";
+      container.appendChild(text);
 
-  const language = document.createElement("span");
-  language.classList.add("language");
-  language.textContent = ext.language;
+      const url = BuildURL(Paths.installExtension, { domain: ext.domain });
+      const { statusCode, content } = await SendRequest<Extension[]>(url, "POST");
+      if (!MountedRef.current) {
+        return;
+      }
 
-  btn.append(name, version, language);
-  item.appendChild(btn);
-  return item;
-};
+      // TODO: handle statusCode
+      content.forEach(extension => {
+        if (!Context.installedExtensions.has(extension.domain)) {
+          Context.installedExtensions.set(extension.domain, extension);
+        }
+      });
+      ext.isInstalled = true;
+      extensions(true);
+    });
+  };
 
-const attachSourceOnClick = (ext: Extension, btn: HTMLButtonElement) => {
-  btn.addEventListener("click", ev => {
-    console.info("List.ts Router.navigate");
-    Router.navigate(`/browse/${ext.domain}`);
+  const uninstallHandler = () => {
+    WithMutex(mutexRef, async () => {
+      clear();
+
+      const text = document.createElement("span");
+      text.textContent = "Uninstalling...";
+      container.appendChild(text);
+
+      const url = BuildURL(Paths.uninstallExtension, { domain: ext.domain });
+      const { statusCode } = await SendRequest<Extension[]>(url, "POST");
+      if (!MountedRef.current) {
+        return;
+      }
+
+      // TODO: handle statusCode
+      Context.installedExtensions.delete(ext.domain);
+      ext.isInstalled = false;
+      extensions(true);
+    });
+  };
+
+  const hide = () => {
+    container.remove();
+    clear();
+  };
+
+  const show = () => {
+    clear();
+
+    const installStateBtn = document.createElement("button");
+    installStateBtn.type = "button";
+    installStateBtn.textContent = dictionary.EN[ext.isInstalled ? 8 : 7];
+
+    if (ext.isInstalled) {
+      installStateBtn.addEventListener("click", () => {
+        clear();
+
+        const title = document.createElement("b");
+        title.textContent = "Are you sure?";
+
+        const no = document.createElement("button");
+        no.type = "button";
+        no.textContent = "No";
+        no.addEventListener("click", show);
+
+        const yes = document.createElement("button");
+        yes.type = "button";
+        yes.textContent = "Yes";
+        yes.addEventListener("click", uninstallHandler);
+
+        container.append(title, no, yes);
+      });
+    } else {
+      installStateBtn.addEventListener("click", installHandler);
+    }
+
+    container.appendChild(installStateBtn);
+    target.after(container);
+  };
+
+  target.addEventListener("click", ev => {
+    if (mutexRef.current) {
+      return;
+    }
+
+    if (state) hide();
+    else show();
+    state = !state;
   });
 };
 
@@ -47,10 +125,30 @@ const sources = () => {
   div.classList.add("sources");
 
   const list = document.createElement("ul");
-  Context.installedExtensions.forEach((ext: Extension) => {
-    const item = createExtItem(ext);
-    attachSourceOnClick(ext, item.firstElementChild as HTMLButtonElement);
+  Context.installedExtensions.forEach(ext => {
+    const item = document.createElement("li");
+    const anchor = CreateAnchor(`/browse/${ext.domain}`);
 
+    const figure = document.createElement("figure");
+    const img = document.createElement("img");
+    // TODO: add icon
+    // eg: localhost:1234/icon/domain.com.png
+    figure.appendChild(img);
+
+    const metadata = document.createElement("div");
+    const name = document.createElement("h3");
+    name.classList.add("name");
+    name.textContent = ext.name;
+
+    const language = document.createElement("span");
+    language.classList.add("language");
+    language.textContent = ext.language;
+    // TODO: transform language code to language name
+
+    metadata.append(name, language);
+    anchor.append(figure, metadata);
+
+    item.appendChild(anchor);
     list.appendChild(item);
   });
   div.appendChild(list);
@@ -58,79 +156,20 @@ const sources = () => {
   if (container.lastElementChild?.classList.contains("index")) {
     container.lastElementChild.replaceWith(div);
   } else {
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i];
-      if (!child.classList.contains(ID)) {
-        child.remove();
-      }
+    if (container.lastElementChild.tagName !== "HEADER") {
+      container.lastElementChild.remove();
     }
     container.appendChild(div);
   }
 };
 
-const attachExtensionOnClick = (ext: Extension, button: HTMLButtonElement) => {
-  const actionsContainer = document.createElement("div");
-  let container: HTMLElement;
-  let state = false;
-
-  const hide = () => {
-    actionsContainer.remove();
-    container?.remove();
-    container = null;
-  };
-
-  const uninstallBtn = document.createElement("button");
-  uninstallBtn.type = "button";
-  uninstallBtn.textContent = "Uninstall";
-  uninstallBtn.addEventListener("click", ev => {
-    ev.preventDefault();
-
-    container = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = "Are you sure?";
-
-    const nBtn = document.createElement("button");
-    nBtn.type = "button";
-    nBtn.textContent = "Cancel";
-
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    nBtn.addEventListener("click", ev => {
-      ev.preventDefault();
-
-      hide();
-      button.after(actionsContainer);
-    });
-
-    const yBtn = document.createElement("button");
-    yBtn.type = "button";
-    yBtn.textContent = "Confirm";
-
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    yBtn.addEventListener("click", ev => {
-      ev.preventDefault();
-
-      hide();
-      state = false;
-    });
-
-    container.append(title, nBtn, yBtn);
-    actionsContainer.remove();
-    button.after(container);
-  });
-  actionsContainer.appendChild(uninstallBtn);
-
-  button.addEventListener("click", ev => {
-    ev.preventDefault();
-
-    if (state) hide();
-    else button.after(actionsContainer);
-    state = !state;
-  });
-};
-
-const extensions = () => {
+extensions = (update?: boolean) => {
   const container = DOM.getContainer();
-  if (!container || container.lastElementChild?.classList.contains("index")) {
+  if (
+    !container ||
+    (container.lastElementChild?.classList.contains("index") && !update) ||
+    (!container.lastElementChild?.classList.contains("index") && update)
+  ) {
     return;
   }
 
@@ -138,40 +177,68 @@ const extensions = () => {
   div.id = "extensions";
   div.classList.add("index");
 
-  const installedList = document.createElement("ul");
-  installedList.classList.add("installed");
+  const installed = document.createElement("ul");
+  installed.classList.add("installed");
 
-  const allList = document.createElement("ul");
-  allList.classList.add("all");
+  const all = document.createElement("ul");
+  all.classList.add("all");
 
-  Context.extensions.forEach((ext: Extension) => {
-    const item = createExtItem(ext);
-    attachExtensionOnClick(ext, item.firstElementChild as HTMLButtonElement);
+  Context.extensions.forEach((extension: Extension) => {
+    const create = (ext: Extension) => {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
 
-    if (ext.isInstalled) installedList.appendChild(item);
-    else allList.appendChild(item);
+      attachOnClick(ext, button);
+
+      const figure = document.createElement("figure");
+      const img = document.createElement("img");
+      // TODO: add icon
+      // eg: localhost:1234/icon/domain.com.png
+      figure.appendChild(img);
+
+      const metadata = document.createElement("div");
+      const name = document.createElement("h3");
+      name.classList.add("name");
+      name.textContent = extension.name;
+
+      const language = document.createElement("span");
+      language.classList.add("language");
+      language.textContent = extension.language;
+      // TODO: transform language code to language name
+
+      const version = document.createElement("span");
+      version.classList.add("version");
+      version.textContent = `v${extension.version}`;
+
+      metadata.append(name, language, version);
+      button.append(figure, metadata);
+
+      item.appendChild(button);
+      return item;
+    };
+
+    if (extension.isInstalled) installed.appendChild(create(extension));
+    else all.appendChild(create(extension));
   });
 
-  if (installedList.children.length) {
+  if (installed.childElementCount) {
     const title = document.createElement("h2");
-    title.textContent = `Installed (${installedList.children.length})`;
-    div.append(title, installedList);
+    title.textContent = `${dictionary.EN["5"]} (${installed.childElementCount})`;
+    div.append(title, installed);
   }
 
-  if (allList.children.length) {
+  if (all.childElementCount) {
     const title = document.createElement("h2");
-    title.textContent = `All (${allList.children.length})`;
-    div.append(title, allList);
+    title.textContent = `${dictionary.EN["6"]} (${all.childElementCount})`;
+    div.append(title, all);
   }
 
   if (container.lastElementChild?.classList.contains("sources")) {
     container.lastElementChild.replaceWith(div);
   } else {
-    for (let i = 0; i < container.children.length; i++) {
-      const child = container.children[i];
-      if (!child.classList.contains(ID)) {
-        child.remove();
-      }
+    if (container.lastElementChild.tagName !== "HEADER") {
+      container.lastElementChild.remove();
     }
     container.appendChild(div);
   }

@@ -57,7 +57,6 @@ export default (filter: Filter) => {
 
     if (isCheckbox && filter.excludedKey) {
       input.addEventListener("click", ev => {
-        console.info(input.name, input.checked);
         if (!input.checked) {
           if (input.name === filter.excludedKey) {
             input.name = filter.key;

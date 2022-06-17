@@ -1,10 +1,11 @@
 import { SendRequest } from "../../App";
+import dictionary from "../../dictionary";
 import DOM, { DefineComponent } from "../../DOM";
 import Router from "../../Router";
 import Entry from "../Entry";
 import { WithLoader } from "../Loader";
 import Actions from "./Actions";
-import Context, { ID, MountedRef } from "./Context";
+import Context, { MountedRef } from "./Context";
 import List from "./List";
 
 const ignoreFields = ["q", "domain", "page"];
@@ -146,15 +147,13 @@ const render = async () => {
   const container = DOM.createContainer("browse");
   if (!Context.extensions.size) {
     await WithLoader(async () => {
-      {
-        const { content } = await SendRequest<Extension[]>("/api/extensions/index");
-        if (!MountedRef.current) {
-          return;
-        }
-        if (content) content.forEach(ext => Context.extensions.set(ext.domain, ext));
+      let { content } = await SendRequest<Extension[]>("/api/extensions/index");
+      if (!MountedRef.current) return;
+      if (content) {
+        content.forEach(ext => Context.extensions.set(ext.domain, ext));
       }
 
-      const { content } = await SendRequest<Extension[]>("/api/extensions");
+      ({ content } = await SendRequest<Extension[]>("/api/extensions"));
       if (MountedRef.current && content?.length) {
         content.forEach(ext => Context.installedExtensions.set(ext.domain, ext));
       }
@@ -168,7 +167,6 @@ const render = async () => {
     if (Context.currentExtension) {
       Router.setTitle(Context.currentExtension.name);
 
-      // prettier-ignore
       const [main, actions] = await WithLoader<HTMLElement[]>(async () => {
         const m = await create();
         if (!MountedRef.current) return [];
@@ -180,30 +178,25 @@ const render = async () => {
       }
       return;
     }
-
-    console.info("Browse.index.ts Router.navigate");
     Router.navigate("/browse");
     return;
   }
 
+  const sourceBtn = document.createElement("button");
+  sourceBtn.textContent = dictionary.EN["3"];
+  sourceBtn.type = "button";
+  sourceBtn.addEventListener("click", () => List.sources());
+
+  const extensionsBtn = document.createElement("button");
+  extensionsBtn.textContent = dictionary.EN["4"];
+  extensionsBtn.type = "button";
+  extensionsBtn.addEventListener("click", () => List.extensions());
+
   const header = document.createElement("header");
-  header.classList.add(ID);
+  const nav = document.createElement("nav");
+  nav.append(sourceBtn, extensionsBtn);
+  header.append(nav);
 
-  const leftBtn = document.createElement("button");
-  leftBtn.textContent = "Sources";
-  leftBtn.addEventListener("click", ev => {
-    ev.preventDefault();
-    List.sources();
-  });
-
-  const rightBtn = document.createElement("button");
-  rightBtn.textContent = "Extensions";
-  rightBtn.addEventListener("click", ev => {
-    ev.preventDefault();
-    List.extensions();
-  });
-
-  header.append(leftBtn, rightBtn);
   container.appendChild(header);
   List.sources();
 };

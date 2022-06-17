@@ -11,10 +11,6 @@ export const BuildURL = (pathname: string, params?: { [k: string]: any }) => {
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
-  if (!url.searchParams.has("path")) {
-    url.searchParams.set("path", `/${window.location.pathname.split("/").slice(3).join("/")}`);
-  }
-
   return decodeURIComponent(url.href);
 };
 

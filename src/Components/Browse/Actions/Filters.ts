@@ -70,8 +70,6 @@ const create = () => {
         url.searchParams.set(element.name, element.value);
       }
     });
-
-    console.info("Filters.ts Router.navigate");
     Router.navigate(url.pathname + url.search, { preventDefault: true });
   });
 

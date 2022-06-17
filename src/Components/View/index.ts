@@ -84,7 +84,7 @@ const setReadState = (state: ReadingStatus) =>
     // TODO: also use WithLoader
     // TODO: update Router state
 
-    const url = BuildURL(Paths.setMangaReadState, { state });
+    const url = BuildURL(Paths.setMangaReadState, { state, path: Context.data.path });
     const { statusCode, content } = await SendRequest<Manga>(url, "POST");
     if (!MountedRef.current || statusCode >= 400) return;
 
@@ -476,6 +476,8 @@ const render = async () => {
   DOM.createContainer("view");
 
   const state = Router.getState<Manga>();
+  const params = { path: `/${window.location.pathname.split("/").slice(3).join("/")}` };
+
   if (state.data) {
     Object.assign(Context, { data: state.data });
     Router.setTitle(Context.data.title);
@@ -483,7 +485,7 @@ const render = async () => {
     create();
     await WithLoader(async () => {
       {
-        const { content } = await SendRequest<Manga>(BuildURL(Paths.metadata));
+        const { content } = await SendRequest<Manga>(BuildURL(Paths.metadata, params));
         if (!MountedRef.current) {
           return;
         }
@@ -495,7 +497,7 @@ const render = async () => {
       Router.setTitle(Context.data.title);
       update();
 
-      const { content } = await SendRequest<ApiChapter>(BuildURL(Paths.chapters));
+      const { content } = await SendRequest<ApiChapter>(BuildURL(Paths.chapters, params));
       if (MountedRef.current && content) {
         Context.data.chapters = content.entries;
         Router.setState(Context);
@@ -506,7 +508,7 @@ const render = async () => {
   }
 
   await WithLoader(async () => {
-    const { content } = await SendRequest<Manga>(BuildURL(Paths.metadata));
+    const { content } = await SendRequest<Manga>(BuildURL(Paths.metadata, params));
     if (!MountedRef.current) return;
     Context.data = content;
     Router.setState(Context);
@@ -516,7 +518,7 @@ const render = async () => {
   create();
 
   await WithLoader(async () => {
-    const { content } = await SendRequest<ApiChapter>(BuildURL(Paths.chapters));
+    const { content } = await SendRequest<ApiChapter>(BuildURL(Paths.chapters, params));
     if (!MountedRef.current) return;
     Context.data.chapters = content.entries;
     Router.setState(Context);

@@ -21,5 +21,7 @@ export const ReadingStatusText = ["None", "Reading", "Planned", "On Hold", "Drop
 export const Paths = {
   metadata: "/api/metadata",
   chapters: "/api/chapters",
-  setMangaReadState: "/api/library/manga/readState"
+  setMangaReadState: "/api/library/manga/readState",
+  installExtension: "/api/extensions/install",
+  uninstallExtension: "/api/extensions/uninstall"
 };

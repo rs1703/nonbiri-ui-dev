@@ -39,8 +39,6 @@ const createNavigation = () => {
         if (prevActive && prevActive !== li) prevActive.classList.remove("active");
         if (!li.classList.contains("active")) li.classList.add("active");
       }
-
-      console.info("Header.ts Router.navigate");
       Router.navigate(anchor.href);
     });
 
