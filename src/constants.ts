@@ -11,12 +11,13 @@ export const MangaStatusText = ["None", "Ongoing", "Completed", "Hiatus", "Cance
 export enum ReadingStatus {
   None,
   Reading,
+  Finished,
   Planned,
   OnHold,
   Dropped
 }
 
-export const ReadingStatusText = ["None", "Reading", "Planned", "On Hold", "Dropped"];
+export const ReadingStatusText = ["None", "Reading", "Finished", "Planned", "On Hold", "Dropped"];
 
 export const Paths = {
   metadata: "/api/metadata",

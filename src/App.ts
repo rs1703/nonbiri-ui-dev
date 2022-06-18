@@ -1,5 +1,7 @@
 import Router from "./Router";
 
+const languageNames = new Intl.DisplayNames(["en"], { type: "language" });
+
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const charactersLength = characters.length;
 
@@ -23,6 +25,8 @@ export const GenerateUniqueString = () => {
   }
   return result;
 };
+
+export const GetLanguageName = (code: string) => languageNames.of(code);
 
 export const FormatUnix = (unix: number) => {
   const time = new Date(unix);

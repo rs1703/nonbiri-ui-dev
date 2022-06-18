@@ -1,5 +1,4 @@
 import { SendRequest } from "../../App";
-import dictionary from "../../dictionary";
 import DOM, { DefineComponent } from "../../DOM";
 import Router from "../../Router";
 import Entry from "../Entry";
@@ -181,24 +180,7 @@ const render = async () => {
     Router.navigate("/browse");
     return;
   }
-
-  const sourceBtn = document.createElement("button");
-  sourceBtn.textContent = dictionary.EN["3"];
-  sourceBtn.type = "button";
-  sourceBtn.addEventListener("click", () => List.sources());
-
-  const extensionsBtn = document.createElement("button");
-  extensionsBtn.textContent = dictionary.EN["4"];
-  extensionsBtn.type = "button";
-  extensionsBtn.addEventListener("click", () => List.extensions());
-
-  const header = document.createElement("header");
-  const nav = document.createElement("nav");
-  nav.append(sourceBtn, extensionsBtn);
-  header.append(nav);
-
-  container.appendChild(header);
-  List.sources();
+  List.create();
 };
 
 const destroy = () => {

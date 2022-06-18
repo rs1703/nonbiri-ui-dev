@@ -32,6 +32,7 @@ declare global {
     domain: string;
     baseUrl: string;
     name: string;
+    description?: string;
     language: string;
     version: string;
     isNsfw: boolean;

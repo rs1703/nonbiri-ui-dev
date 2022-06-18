@@ -20,10 +20,7 @@ main {
 }
 
 main#browse {
-  align-items: flex-start;
-  display: flex;
   padding: 0 1rem;
-  gap: 1rem;
 }
 
 main > .loader.global {
@@ -41,6 +38,131 @@ main > .loader.fetching {
 
   right: 2rem;
   bottom: 2rem;
+}
+
+#extensions {
+  max-width: 96rem;
+  margin: auto;
+
+  h2 {
+    margin-bottom: 0.4rem;
+
+    &:not(:first-child) {
+      margin-top: 1rem;
+    }
+  }
+
+  > div > a,
+  > div > button {
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    user-drag: none;
+
+    box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+    background-color: @bg-primary;
+    border: 0.1rem solid @border;
+    border-radius: 0.4rem;
+
+    text-align: left;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    width: 100%;
+    padding: 1.2rem;
+
+    &:hover,
+    &:active,
+    &:focus-visible {
+      background-color: lighten(@bg-primary, 0.33%);
+      color: @text;
+    }
+
+    & + * {
+      margin-top: 0.6rem;
+    }
+
+    > * {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    @iconSz: 4rem;
+    figure {
+      background-color: @bg-secondary;
+
+      overflow: hidden;
+      width: @iconSz;
+      height: $width;
+
+      img {
+        transform: scale(1.25);
+        object-fit: cover;
+      }
+    }
+
+    > div:first-of-type {
+      flex: 1 0;
+      width: 0;
+      padding: 0 1.2rem;
+
+      > div:first-child {
+        display: flex;
+        gap: 0.4rem;
+
+        h3 {
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: @text-strong;
+
+          overflow: hidden;
+          flex-basis: content;
+        }
+      }
+
+      > span {
+        display: inline;
+        vertical-align: top;
+
+        &:not(:last-of-type):not(:last-child) {
+          margin-right: 0.4rem;
+        }
+      }
+
+      p {
+        margin-top: 0.4rem;
+      }
+    }
+
+    > div:last-of-type {
+      text-align: right;
+      min-width: 12rem;
+
+      button {
+        box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+        background-color: @bg-secondary;
+        border: 0.1rem solid @border-primary;
+        border-radius: 0.4rem;
+        font-weight: 500;
+
+        padding: 0.6rem 1rem;
+
+        &:hover,
+        &:active,
+        &:focus-visible {
+          background-color: lighten(@bg-secondary, 1%);
+        }
+      }
+    }
+  }
+}
+
+#extensions .nsfw {
+  color: rgb(240, 80, 80);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 main .show-actions {
@@ -64,6 +186,33 @@ main .show-actions {
   &:active,
   &:focus-visible {
     background-color: @bg-primary;
+  }
+}
+
+main .actions.popup .popup-content {
+  box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.25);
+  background-color: @bg-primary;
+  border-radius: 0.4rem;
+  max-width: 76.8rem;
+}
+
+main .actions.popup .search-form {
+  box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
+  background-color: @bg-secondary;
+  border-bottom: 0.2rem solid @border-primary;
+
+  position: sticky;
+  top: 0;
+  z-index: 98;
+
+  display: flex;
+
+  > * {
+    padding: 1rem 1.4rem;
+  }
+
+  input {
+    flex: 1 0;
   }
 }
 
@@ -160,6 +309,15 @@ main .actions.popup .filters .filter {
   }
 }
 
+main .actions.popup .filters .filter .title {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+main .actions.popup .filters .filter .options {
+  position: relative;
+}
+
 main .actions.popup .filters .filter[data-type="select"] .options:after {
   content: "";
 
@@ -181,42 +339,6 @@ main .actions.popup .filters .filter[data-type="checkbox"] .options {
 
   label:not(:last-child) span {
     margin-right: @m;
-  }
-}
-
-main .actions.popup .filters .filter .title {
-  display: block;
-  margin-bottom: 0.4rem;
-}
-
-main .actions.popup .filters .filter .options {
-  position: relative;
-}
-
-main .actions.popup .popup-content {
-  box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.25);
-  background-color: @bg-primary;
-  border-radius: 0.4rem;
-  max-width: 76.8rem;
-}
-
-main .actions.popup .search-form {
-  box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.25);
-  background-color: @bg-secondary;
-  border-bottom: 0.2rem solid @border-primary;
-
-  position: sticky;
-  top: 0;
-  z-index: 98;
-
-  display: flex;
-
-  > * {
-    padding: 1rem 1.4rem;
-  }
-
-  input {
-    flex: 1 0;
   }
 }
 
@@ -271,15 +393,6 @@ main .entries .entry {
   }
 }
 
-main .entries .entry:not(:hover) figure .actions button {
-  opacity: 0;
-}
-
-main .entries .entry[data-followed] .thumbnail,
-main .entries .entry[data-unfollowed] .thumbnail {
-  filter: brightness(0.4);
-}
-
 main .entries .entry figure {
   background-color: @bg-primary;
   border-radius: 0.4rem;
@@ -293,7 +406,7 @@ main .entries .entry figure {
   overflow: hidden;
 }
 
-main .entries .entry figure .thumbnail {
+main .entries .entry .thumbnail {
   transition: 0.2s ease-in-out opacity;
   background-size: cover;
   background-position: center;
@@ -309,7 +422,12 @@ main .entries .entry figure .thumbnail {
   }
 }
 
-main .entries .entry figure .actions {
+main .entries .entry[data-followed] .thumbnail,
+main .entries .entry[data-unfollowed] .thumbnail {
+  filter: brightness(0.4);
+}
+
+main .entries .entry .actions {
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -331,10 +449,16 @@ main .entries .entry figure .actions {
     height: 3.2rem;
     padding: 0.8rem;
 
-    &:hover {
+    &:hover,
+    &:active,
+    &:focus-visible {
       background-color: fade(#000, 85%);
     }
   }
+}
+
+main .entries .entry:not(:hover) .actions button {
+  opacity: 0;
 }
 
 main .entries .entry .metadata {

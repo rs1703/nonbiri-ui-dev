@@ -116,7 +116,9 @@ body[data-route="/view"] #view {
     width: calc(100% - @followStateSz);
     height: 100%;
 
-    &:hover {
+    &:hover,
+    &:active,
+    &:focus-visible {
       color: @text;
       background-color: lighten(@bg-primary, 1%);
     }
@@ -134,7 +136,9 @@ body[data-route="/view"] #view {
       height: 100%;
       border-radius: 0 0.4rem 0.4rem 0;
 
-      &:hover {
+      &:hover,
+      &:active,
+      &:focus-visible {
         color: @text;
         background-color: lighten(@bg-secondary, 1%);
       }
@@ -177,7 +181,9 @@ body[data-route="/view"] #view {
         width: 100%;
         padding: 0.6rem 1.2rem;
 
-        &:hover {
+        &:hover,
+        &:active,
+        &:focus-visible {
           color: @text;
           background-color: lighten(@bg-primary, 1%);
         }
@@ -186,7 +192,9 @@ body[data-route="/view"] #view {
       li:nth-child(even) button {
         background-color: @bg-secondary;
 
-        &:hover {
+        &:hover,
+        &:active,
+        &:focus-visible {
           background-color: lighten(@bg-secondary, 1%);
         }
       }
@@ -258,12 +266,16 @@ body[data-route="/view"] #view {
       }
     }
 
-    li a:hover {
+    li a:hover,
+    li a:active,
+    li a:focus-visible {
       color: @text;
       background-color: lighten(@bg-primary, 1%);
     }
 
-    li:nth-child(odd) a:hover {
+    li:nth-child(odd) a:hover,
+    li:nth-child(odd) a:active,
+    li:nth-child(odd) a:focus-visible {
       background-color: lighten(@bg-secondary, 1%);
     }
   }
