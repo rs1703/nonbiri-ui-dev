@@ -1,3 +1,9 @@
+export enum State {
+  OFF = 0,
+  ON = 1,
+  EX = 2
+}
+
 export enum MangaStatus {
   None,
   Ongoing,
